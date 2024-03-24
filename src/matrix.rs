@@ -270,7 +270,7 @@ impl Display for Matrix {
         writeln!(f, "[[")?;
         for i in 0..self.row_size() {
             let s = self.rows[i].to_string();
-            let s = s.strip_prefix("[").unwrap().strip_suffix("]").unwrap();
+            let s = s.strip_prefix('[').unwrap().strip_suffix(']').unwrap();
             writeln!(f, "{s};")?;
         }
         write!(f, "]]")
