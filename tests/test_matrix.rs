@@ -155,26 +155,11 @@ fn sub() {
 
 #[rstest]
 fn mul() {
-    assert_eq!(Matrix::create(2, 3, 1.into()) * Matrix::create(2, 3, 2.into()), Matrix::create(2, 3, 2.into()));
-    assert_eq!(
-        Matrix::from([[1, 2], [3, 4]]) * Matrix::from([[-1, -1], [-1, -1]]),
-        Matrix::from([[-1, -2], [-3, -4]])
-    );
+    assert_eq!(Matrix::create(2, 2, 1.into()) * Matrix::create(2, 2, 2.into()), Matrix::create(2, 2, 4.into()));
+    assert_eq!(Matrix::create(1, 3, 1.into()) * Matrix::create(3, 1, 1.into()), Matrix::create(1, 1, 3.into()));
 
     assert_eq!(Matrix::create(2, 3, 1.into()) * Fraction::from(2), Matrix::create(2, 3, 2.into()));
     assert_eq!(Matrix::from([[1, 2], [3, 4]]) * Fraction::from(3), Matrix::from([[3, 6], [9, 12]]));
-}
-
-#[rstest]
-fn dot() {
-    assert_eq!(
-        Matrix::dot(&Matrix::create(2, 2, 1.into()), &Matrix::create(2, 2, 2.into())),
-        Matrix::create(2, 2, 4.into())
-    );
-    assert_eq!(
-        Matrix::dot(&Matrix::create(1, 3, 1.into()), &Matrix::create(3, 1, 1.into())),
-        Matrix::create(1, 1, 3.into())
-    );
 }
 
 #[rstest]

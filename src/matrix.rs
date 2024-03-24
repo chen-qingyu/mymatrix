@@ -61,6 +61,46 @@ impl Matrix {
         self.rows.iter()
     }
 
+    /// Split this matrix by rows.
+    pub fn split_row(&self, n: usize) -> (Matrix, Matrix) {
+        utility::check_bounds(n, 0, self.row_size());
+
+        let mut first = Matrix::new();
+        let mut second = Matrix::new();
+        first.rows = self.rows[0..n].to_vec();
+        second.rows = self.rows[n..].to_vec();
+
+        (first, second)
+    }
+
+    /// Split this matrix by columns.
+    pub fn split_col(&self, n: usize) -> (Matrix, Matrix) {
+        utility::check_bounds(n, 0, self.col_size());
+
+        let mut first = Matrix::new();
+        let mut second = Matrix::new();
+        first.rows.resize(self.row_size(), Default::default());
+        second.rows.resize(self.row_size(), Default::default());
+        for r in 0..self.row_size() {
+            first.rows[r].elements = self.rows[r].elements[..n].to_vec();
+            second.rows[r].elements = self.rows[r].elements[n..].to_vec();
+        }
+
+        (first, second)
+    }
+
+    /// Returns the transpose of the matrix.
+    pub fn transpose(&self) -> Matrix {
+        let mut result = Matrix::create(self.col_size(), self.row_size(), 0.into());
+
+        for i in 0..self.row_size() {
+            for j in 0..self.col_size() {
+                result[j][i] = self[i][j];
+            }
+        }
+        result
+    }
+
     /// Calculate the rank of this matrix.
     pub fn rank(&self) -> usize {
         let mut echelon = self.clone();
@@ -173,66 +213,6 @@ impl Matrix {
         self.rows.sort_by_key(|r| r.count_leading_zeros());
         self
     }
-
-    /// Split this matrix by rows.
-    pub fn split_row(&self, n: usize) -> (Matrix, Matrix) {
-        utility::check_bounds(n, 0, self.row_size());
-
-        let mut first = Matrix::new();
-        let mut second = Matrix::new();
-        first.rows = self.rows[0..n].to_vec();
-        second.rows = self.rows[n..].to_vec();
-
-        (first, second)
-    }
-
-    /// Split this matrix by columns.
-    pub fn split_col(&self, n: usize) -> (Matrix, Matrix) {
-        utility::check_bounds(n, 0, self.col_size());
-
-        let mut first = Matrix::new();
-        let mut second = Matrix::new();
-        first.rows.resize(self.row_size(), Default::default());
-        second.rows.resize(self.row_size(), Default::default());
-        for r in 0..self.row_size() {
-            first.rows[r].elements = self.rows[r].elements[..n].to_vec();
-            second.rows[r].elements = self.rows[r].elements[n..].to_vec();
-        }
-
-        (first, second)
-    }
-
-    /// Returns the transpose of the matrix.
-    pub fn transpose(&self) -> Matrix {
-        let mut result = Matrix::create(self.col_size(), self.row_size(), 0.into());
-
-        for i in 0..self.row_size() {
-            for j in 0..self.col_size() {
-                result[j][i] = self[i][j];
-            }
-        }
-        result
-    }
-
-    /// Return the product of two matrices.
-    pub fn dot(a: &Matrix, b: &Matrix) -> Matrix {
-        utility::check_size(a.col_size(), b.row_size());
-
-        let mut result = Matrix::create(a.row_size(), b.col_size(), 0.into());
-        let mt = b.transpose();
-        for r in 0..a.row_size() {
-            for c in 0..b.col_size() {
-                result[r][c] = Vector::dot(&a[r], &mt[c]);
-            }
-        }
-        result
-    }
-}
-
-impl<const N: usize> From<[Vector; N]> for Matrix {
-    fn from(value: [Vector; N]) -> Self {
-        Self { rows: Vec::from(value) }
-    }
 }
 
 impl<const R: usize, const C: usize> From<[[i32; C]; R]> for Matrix {
@@ -303,12 +283,16 @@ impl SubAssign for Matrix {
 
 impl MulAssign for Matrix {
     fn mul_assign(&mut self, rhs: Self) {
-        utility::check_size(self.row_size(), rhs.row_size());
-        utility::check_size(self.col_size(), rhs.col_size());
+        utility::check_size(self.col_size(), rhs.row_size());
 
+        let mut result = Matrix::create(self.row_size(), rhs.col_size(), 0.into());
+        let mt = rhs.transpose();
         for r in 0..self.row_size() {
-            self.rows[r] *= &rhs[r];
+            for c in 0..rhs.col_size() {
+                result[r][c] = Vector::dot(&self[r], &mt[c]);
+            }
         }
+        *self = result;
     }
 }
 
