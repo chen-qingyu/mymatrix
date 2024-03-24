@@ -20,9 +20,7 @@ impl Vector {
 
     /// Construct a vector with n identical elements.
     pub fn create(n: usize, value: Fraction) -> Vector {
-        Self {
-            elements: [value].repeat(n),
-        }
+        Self { elements: [value].repeat(n) }
     }
 
     /// Returns the number of elements in the vector.
@@ -48,7 +46,7 @@ impl Vector {
         for i in 0..self.size() {
             length += f64::from(self.elements[i] * self.elements[i]);
         }
-        length
+        length.sqrt()
     }
 
     /// Calculate the number of leading zeros for this vector.
@@ -70,17 +68,21 @@ impl Vector {
         self.count_leading_zeros() == self.size()
     }
 
-    /// Unitize this vector.
-    pub fn unitize(&self) -> Self {
+    /// Determine whether two vectors are orthogonal.
+    pub fn is_orthogonal(&self, vector: &Self) -> bool {
         utility::check_empty(self.size());
+        utility::check_size(self.size(), vector.size());
 
-        if self.is_zero() {
-            panic!("Error: The zero vector can not be unitized.");
-        }
-
-        self.clone()
+        Self::dot(self, vector) == 0.into()
     }
 
+    /// Determine whether two vectors are paralle.
+    pub fn is_parallel(&self, vector: &Self) -> bool {
+        utility::check_empty(self.size());
+        utility::check_size(self.size(), vector.size());
+
+        f64::from(Self::dot(self, vector)).abs() == self.length() * vector.length()
+    }
     /// Return the dot product (scalar product, inner product) of two vectors.
     pub fn dot(a: &Self, b: &Self) -> Fraction {
         utility::check_empty(a.size());
@@ -102,22 +104,6 @@ impl Vector {
         } else {
             panic!("Error: Incompatible dimensions for cross product.");
         }
-    }
-
-    /// Determine whether two vectors are orthogonal.
-    pub fn is_orthogonal(a: &Self, b: &Self) -> bool {
-        utility::check_empty(a.size());
-        utility::check_size(a.size(), b.size());
-
-        Self::dot(a, b) == 0.into()
-    }
-
-    /// Determine whether two vectors are paralle.
-    pub fn is_parallel(a: &Self, b: &Self) -> bool {
-        utility::check_empty(a.size());
-        utility::check_size(a.size(), b.size());
-
-        f64::from(Self::dot(a, b)).abs() == a.length() * b.length()
     }
 }
 

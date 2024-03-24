@@ -63,21 +63,59 @@ impl Matrix {
 
     /// Calculate the rank of this matrix.
     pub fn rank(&self) -> usize {
-        todo!()
+        let mut echelon = self.clone();
+        echelon.to_row_echelon();
+        let mut zero: usize = 0;
+        for r in echelon.rows {
+            if r.is_zero() {
+                zero += 1;
+            }
+        }
+        self.row_size() - zero
     }
 
     /// Compute the determinant of this matrix.
     pub fn det(&self) -> Fraction {
-        todo!()
+        // check square matrix
+        utility::check_size(self.row_size(), self.col_size());
+
+        let mut echelon = self.clone();
+        echelon.to_row_echelon();
+        let mut determinant = Fraction::from(1);
+        for i in 0..echelon.row_size() {
+            determinant *= echelon[i][i];
+        }
+        determinant
     }
 
     /// Compute the inverse of this matrix.
-    pub fn inv(&self) -> Matrix {
-        todo!()
+    pub fn inv(&self) -> Option<Matrix> {
+        // check square matrix and check invertible matrix
+        if self.row_size() != self.col_size() || self.rank() != self.row_size() {
+            return None;
+        }
+
+        let mut echelon = self.clone();
+        // generate augmented matrix [A:E]
+        echelon.append_col(Matrix::eye(self.row_size()));
+        // transforming [A:E] into a row echelon matrix
+        echelon.to_row_echelon();
+        // transform A into a diagonal matrix
+        for c in 0..echelon.row_size() {
+            for r in 0..c {
+                echelon.e_row_sum(r, c, -(echelon[r][c] / echelon[c][c]));
+            }
+        }
+        // transform A into a unit matrix
+        for r in 0..echelon.row_size() {
+            echelon.e_scalar_multiplication(r, Fraction::from(1) / echelon[r][r]);
+        }
+        // at this point, the original E is the inverse of A
+        Some(echelon.split_col(self.row_size()).1)
     }
 
     /// Expand this matrix by rows.
-    pub fn append_row(&mut self, mut matrix: Matrix) -> &Matrix {
+    pub fn append_row(&mut self, mut matrix: Matrix) -> &Self {
         utility::check_size(self.col_size(), matrix.col_size());
 
         self.rows.append(&mut matrix.rows);
@@ -85,7 +123,7 @@ impl Matrix {
     }
 
     /// Expand this matrix by columns.
-    pub fn append_col(&mut self, mut matrix: Matrix) -> &Matrix {
+    pub fn append_col(&mut self, mut matrix: Matrix) -> &Self {
         utility::check_size(self.row_size(), matrix.row_size());
 
         for i in 0..self.row_size() {
@@ -115,7 +153,7 @@ impl Matrix {
     }
 
     /// Transform this matrix to general row echelon form.
-    pub fn transform_row_echelon(&mut self) -> &Self {
+    pub fn to_row_echelon(&mut self) -> &Self {
         // step 1: Gaussian elimination
         for i in 0..self.row_size() {
             let mut j: usize = 0;
@@ -152,10 +190,10 @@ impl Matrix {
 
         let mut first = Matrix::new();
         let mut second = Matrix::new();
-        first.rows.reserve(self.row_size());
-        second.rows.reserve(self.row_size());
+        first.rows.resize(self.row_size(), Default::default());
+        second.rows.resize(self.row_size(), Default::default());
         for r in 0..self.row_size() {
-            first.rows[r].elements = self.rows[r].elements[0..n].to_vec();
+            first.rows[r].elements = self.rows[r].elements[..n].to_vec();
             second.rows[r].elements = self.rows[r].elements[n..].to_vec();
         }
 
@@ -195,6 +233,20 @@ impl<const N: usize> From<[Vector; N]> for Matrix {
     }
 }
 
+impl<const R: usize, const C: usize> From<[[i32; C]; R]> for Matrix {
+    fn from(value: [[i32; C]; R]) -> Self {
+        let v: [Vector; R] = value.map(|x| x.into());
+        Matrix { rows: Vec::from(v) }
+    }
+}
+
+impl<const R: usize, const C: usize> From<[[Fraction; C]; R]> for Matrix {
+    fn from(value: [[Fraction; C]; R]) -> Self {
+        let v: [Vector; R] = value.map(|x| x.into());
+        Matrix { rows: Vec::from(v) }
+    }
+}
+
 impl Index<usize> for Matrix {
     type Output = Vector;
 
@@ -211,10 +263,17 @@ impl IndexMut<usize> for Matrix {
 
 impl Display for Matrix {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        for i in 0..self.row_size() {
-            writeln!(f, "{}", self.rows[i])?;
+        if self.rows.is_empty() {
+            return write!(f, "[[]]");
         }
-        Ok(())
+
+        writeln!(f, "[[")?;
+        for i in 0..self.row_size() {
+            let s = self.rows[i].to_string();
+            let s = s.strip_prefix("[").unwrap().strip_suffix("]").unwrap();
+            writeln!(f, "{s};")?;
+        }
+        write!(f, "]]")
     }
 }
 
