@@ -21,7 +21,7 @@ impl Vector {
     /// Construct a vector with n identical elements.
     pub fn create(n: usize, value: Fraction) -> Vector {
         Self {
-            elements: Vec::from([value].repeat(n)),
+            elements: [value].repeat(n),
         }
     }
 
@@ -96,7 +96,7 @@ impl Vector {
     /// Return the cross product of two vectors.
     pub fn cross(a: &Self, b: &Self) -> Self {
         if a.size() == 2 && b.size() == 2 {
-            return Vector::from([a[0] * b[1] - a[1] * b[0]]);
+            Vector::from([a[0] * b[1] - a[1] * b[0]])
         } else if a.size() == 3 && b.size() == 3 {
             return Vector::from([a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]);
         } else {
@@ -109,7 +109,7 @@ impl Vector {
         utility::check_empty(a.size());
         utility::check_size(a.size(), b.size());
 
-        return Self::dot(a, b) == 0.into();
+        Self::dot(a, b) == 0.into()
     }
 
     /// Determine whether two vectors are paralle.
@@ -117,7 +117,7 @@ impl Vector {
         utility::check_empty(a.size());
         utility::check_size(a.size(), b.size());
 
-        return f64::from(Self::dot(a, b)).abs() == a.length() * b.length();
+        f64::from(Self::dot(a, b)).abs() == a.length() * b.length()
     }
 }
 

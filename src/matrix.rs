@@ -143,7 +143,7 @@ impl Matrix {
         first.rows = self.rows[0..n].to_vec();
         second.rows = self.rows[n..].to_vec();
 
-        return (first, second);
+        (first, second)
     }
 
     /// Split this matrix by columns.
@@ -159,7 +159,7 @@ impl Matrix {
             second.rows[r].elements = self.rows[r].elements[n..].to_vec();
         }
 
-        return (first, second);
+        (first, second)
     }
 
     /// Returns the transpose of the matrix.
@@ -171,7 +171,7 @@ impl Matrix {
                 result[j][i] = self[i][j];
             }
         }
-        return result;
+        result
     }
 
     /// Return the product of two matrices.
@@ -185,7 +185,7 @@ impl Matrix {
                 result[r][c] = Vector::dot(&a[r], &mt[c]);
             }
         }
-        return result;
+        result
     }
 }
 
@@ -212,7 +212,7 @@ impl IndexMut<usize> for Matrix {
 impl Display for Matrix {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for i in 0..self.row_size() {
-            write!(f, "{}\n", self.rows[i])?;
+            writeln!(f, "{}", self.rows[i])?;
         }
         Ok(())
     }
