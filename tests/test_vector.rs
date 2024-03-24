@@ -95,9 +95,8 @@ fn sub() {
 
 #[rstest]
 fn mul() {
-    assert_eq!(Vector::from([1]) * Vector::from([1]), Vector::from([1]));
-    assert_eq!(Vector::from([1, 2, 3]) * Vector::from([4, 5, 6]), Vector::from([4, 10, 18]));
-    assert_eq!(Vector::from([1, 2]) * Vector::from([1, 2]) * Vector::from([1, 2]), Vector::from([1, 8]));
+    assert_eq!(Vector::from([1]) * Vector::from([1]), 1.into());
+    assert_eq!(Vector::from([1, 2, 3]) * Vector::from([4, 5, 6]), 32.into());
 }
 
 #[rstest]
@@ -108,12 +107,6 @@ fn scalar_multiplication() {
         Vector::from([1, 2]) * Fraction::from(2) * Fraction::from((4, 10)),
         Vector::from([Fraction::from((8, 10)), Fraction::from((16, 10))])
     );
-}
-
-#[rstest]
-fn dot() {
-    assert_eq!(Vector::dot(&[1].into(), &[1].into()), 1.into());
-    assert_eq!(Vector::dot(&[1, 2, 3].into(), &[4, 5, 6].into()), 32.into());
 }
 
 #[rstest]

@@ -289,7 +289,7 @@ impl MulAssign for Matrix {
         let mt = rhs.transpose();
         for r in 0..self.row_size() {
             for c in 0..rhs.col_size() {
-                result[r][c] = Vector::dot(&self[r], &mt[c]);
+                result[r][c] = &self[r] * &mt[c];
             }
         }
         *self = result;

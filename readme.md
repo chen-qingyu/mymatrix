@@ -28,13 +28,11 @@ Some simple examples:
 use mymatrix::*;
 
 // Vector dot product
-Vector::dot(&[1, 2, 3].into(), &[4, 5, 6].into()); // 32
+Vector::from([1, 2, 3]) * Vector::from([4, 5, 6]); // 32
 // Vector cross product
 Vector::cross(&[1, 2, 3].into(), &[4, 5, 6].into()); // [-3 6 -3]
 // Vector scalar product
 Vector::from([1, 2]) * pyinrs::Fraction::from((2, 5)); // [2/5 4/5]
-// Vector Hadamard product
-Vector::from([1, 2, 3]) * Vector::from([4, 5, 6]); // [4 10 18]
 
 // Matrix rank
 Matrix::from([[1, 2, 3], [4, 5, 6], [7, 8, 9]]).rank(); // 2

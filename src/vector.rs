@@ -73,7 +73,7 @@ impl Vector {
         utility::check_empty(self.size());
         utility::check_size(self.size(), vector.size());
 
-        Self::dot(self, vector) == 0.into()
+        (self * vector) == 0.into()
     }
 
     /// Determine whether two vectors are paralle.
@@ -81,18 +81,7 @@ impl Vector {
         utility::check_empty(self.size());
         utility::check_size(self.size(), vector.size());
 
-        f64::from(Self::dot(self, vector)).abs() == self.length() * vector.length()
-    }
-    /// Return the dot product (scalar product, inner product) of two vectors.
-    pub fn dot(a: &Self, b: &Self) -> Fraction {
-        utility::check_empty(a.size());
-        utility::check_size(a.size(), b.size());
-
-        let mut result = 0.into();
-        for i in 0..a.size() {
-            result += a[i] * b[i];
-        }
-        result
+        f64::from(self * vector).abs() == self.length() * vector.length()
     }
 
     /// Return the cross product of two vectors.
@@ -169,17 +158,6 @@ impl SubAssign<&Vector> for Vector {
     }
 }
 
-impl MulAssign<&Vector> for Vector {
-    fn mul_assign(&mut self, rhs: &Vector) {
-        utility::check_empty(self.size());
-        utility::check_size(self.size(), rhs.size());
-
-        for i in 0..self.size() {
-            self[i] *= rhs[i];
-        }
-    }
-}
-
 impl MulAssign<Fraction> for Vector {
     fn mul_assign(&mut self, rhs: Fraction) {
         utility::check_empty(self.size());
@@ -187,6 +165,21 @@ impl MulAssign<Fraction> for Vector {
         for i in 0..self.size() {
             self[i] *= rhs;
         }
+    }
+}
+
+impl Mul<&Vector> for &Vector {
+    type Output = Fraction;
+
+    fn mul(self, rhs: &Vector) -> Self::Output {
+        utility::check_empty(self.size());
+        utility::check_size(self.size(), rhs.size());
+
+        let mut result = 0.into();
+        for i in 0..self.size() {
+            result += self[i] * rhs[i];
+        }
+        result
     }
 }
 
@@ -208,20 +201,19 @@ impl Sub for Vector {
     }
 }
 
-impl Mul for Vector {
-    type Output = Self;
-
-    fn mul(mut self, rhs: Self) -> Self::Output {
-        self *= &rhs;
-        self
-    }
-}
-
 impl Mul<Fraction> for Vector {
     type Output = Self;
 
     fn mul(mut self, rhs: Fraction) -> Self::Output {
         self *= rhs;
         self
+    }
+}
+
+impl Mul for Vector {
+    type Output = Fraction;
+
+    fn mul(self, rhs: Self) -> Self::Output {
+        &self * &rhs
     }
 }
