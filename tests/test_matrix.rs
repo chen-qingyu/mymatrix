@@ -61,14 +61,9 @@ fn rank() {
 
 #[rstest]
 fn det() {
-    assert_eq!(Matrix::from([[1, 2, 3], [4, 5, 6], [7, 8, 9]]).det(), 0.into());
-    assert_eq!(Matrix::from([[1, 2, 3], [4, 5, 6], [7, 8, 0]]).det(), 27.into());
-}
-
-#[rstest]
-#[should_panic(expected = "Error: The dimensions mismatch.")]
-fn bad_det() {
-    Matrix::from([[1, 2, 3], [4, 5, 6]]).det();
+    assert_eq!(Matrix::from([[1, 2, 3], [4, 5, 6], [7, 8, 9]]).det(), Some(0.into()));
+    assert_eq!(Matrix::from([[1, 2, 3], [4, 5, 6], [7, 8, 0]]).det(), Some(27.into()));
+    assert_eq!(Matrix::from([[1, 2, 3], [4, 5, 6]]).det(), None);
 }
 
 #[rstest]
@@ -80,6 +75,17 @@ fn inv() {
             [Fraction::from((3, 2)), Fraction::from((-1, 2))]
         ]))
     );
+
+    assert_eq!(
+        Matrix::from([[1, 2, 3], [4, 5, 6], [7, 8, 0]]).inv(),
+        Some(Matrix::from([
+            [Fraction::from((-16, 9)), Fraction::from((8, 9)), Fraction::from((-1, 9))],
+            [Fraction::from((14, 9)), Fraction::from((-7, 9)), Fraction::from((2, 9))],
+            [Fraction::from((-1, 9)), Fraction::from((2, 9)), Fraction::from((-1, 9))],
+        ]))
+    );
+
+    assert_eq!(Matrix::from([[1, 2, 3], [4, 5, 6], [7, 8, 9]]).inv(), None);
 }
 
 #[rstest]

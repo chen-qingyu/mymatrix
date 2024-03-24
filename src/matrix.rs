@@ -75,9 +75,11 @@ impl Matrix {
     }
 
     /// Compute the determinant of this matrix.
-    pub fn det(&self) -> Fraction {
+    pub fn det(&self) -> Option<Fraction> {
         // check square matrix
-        utility::check_size(self.row_size(), self.col_size());
+        if self.row_size() != self.col_size() {
+            return None;
+        }
 
         let mut echelon = self.clone();
         echelon.to_row_echelon();
@@ -85,7 +87,7 @@ impl Matrix {
         for i in 0..echelon.row_size() {
             determinant *= echelon[i][i];
         }
-        determinant
+        Some(determinant)
     }
 
     /// Compute the inverse of this matrix.
