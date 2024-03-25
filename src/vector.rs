@@ -136,35 +136,31 @@ impl Display for Vector {
     }
 }
 
-impl AddAssign<&Vector> for Vector {
-    fn add_assign(&mut self, rhs: &Vector) {
-        utility::check_empty(self.size());
+impl Add<&Vector> for &Vector {
+    type Output = Vector;
+
+    fn add(self, rhs: &Vector) -> Self::Output {
         utility::check_size(self.size(), rhs.size());
 
+        let mut result = self.clone();
         for i in 0..self.size() {
-            self[i] += rhs[i];
+            result[i] += rhs[i];
         }
+        result
     }
 }
 
-impl SubAssign<&Vector> for Vector {
-    fn sub_assign(&mut self, rhs: &Vector) {
-        utility::check_empty(self.size());
+impl Sub<&Vector> for &Vector {
+    type Output = Vector;
+
+    fn sub(self, rhs: &Vector) -> Self::Output {
         utility::check_size(self.size(), rhs.size());
 
+        let mut result = self.clone();
         for i in 0..self.size() {
-            self[i] -= rhs[i];
+            result[i] -= rhs[i];
         }
-    }
-}
-
-impl MulAssign<Fraction> for Vector {
-    fn mul_assign(&mut self, rhs: Fraction) {
-        utility::check_empty(self.size());
-
-        for i in 0..self.size() {
-            self[i] *= rhs;
-        }
+        result
     }
 }
 
@@ -183,30 +179,31 @@ impl Mul<&Vector> for &Vector {
     }
 }
 
+impl Mul<Fraction> for &Vector {
+    type Output = Vector;
+
+    fn mul(self, rhs: Fraction) -> Self::Output {
+        let mut result = self.clone();
+        for i in 0..self.size() {
+            result[i] *= rhs;
+        }
+        result
+    }
+}
+
 impl Add for Vector {
     type Output = Self;
 
-    fn add(mut self, rhs: Self) -> Self::Output {
-        self += &rhs;
-        self
+    fn add(self, rhs: Self) -> Self::Output {
+        &self + &rhs
     }
 }
 
 impl Sub for Vector {
     type Output = Self;
 
-    fn sub(mut self, rhs: Self) -> Self::Output {
-        self -= &rhs;
-        self
-    }
-}
-
-impl Mul<Fraction> for Vector {
-    type Output = Self;
-
-    fn mul(mut self, rhs: Fraction) -> Self::Output {
-        self *= rhs;
-        self
+    fn sub(self, rhs: Self) -> Self::Output {
+        &self - &rhs
     }
 }
 
@@ -215,5 +212,34 @@ impl Mul for Vector {
 
     fn mul(self, rhs: Self) -> Self::Output {
         &self * &rhs
+    }
+}
+
+impl Mul<Fraction> for Vector {
+    type Output = Self;
+
+    fn mul(mut self, rhs: Fraction) -> Self::Output {
+        for i in 0..self.size() {
+            self[i] *= rhs;
+        }
+        self
+    }
+}
+
+impl AddAssign<&Vector> for Vector {
+    fn add_assign(&mut self, rhs: &Vector) {
+        *self = &*self + rhs;
+    }
+}
+
+impl SubAssign<&Vector> for Vector {
+    fn sub_assign(&mut self, rhs: &Vector) {
+        *self = &*self - rhs;
+    }
+}
+
+impl MulAssign<Fraction> for Vector {
+    fn mul_assign(&mut self, rhs: Fraction) {
+        *self = &*self * rhs;
     }
 }

@@ -65,8 +65,7 @@ impl Matrix {
     pub fn split_row(&self, n: usize) -> (Matrix, Matrix) {
         utility::check_bounds(n, 0, self.row_size());
 
-        let mut first = Matrix::new();
-        let mut second = Matrix::new();
+        let (mut first, mut second) = (Matrix::new(), Matrix::new());
         first.rows = self.rows[0..n].to_vec();
         second.rows = self.rows[n..].to_vec();
 
@@ -77,8 +76,7 @@ impl Matrix {
     pub fn split_col(&self, n: usize) -> (Matrix, Matrix) {
         utility::check_bounds(n, 0, self.col_size());
 
-        let mut first = Matrix::new();
-        let mut second = Matrix::new();
+        let (mut first, mut second) = (Matrix::new(), Matrix::new());
         first.rows.resize(self.row_size(), Default::default());
         second.rows.resize(self.row_size(), Default::default());
         for r in 0..self.row_size() {
@@ -103,18 +101,11 @@ impl Matrix {
 
     /// Calculate the rank of this matrix.
     pub fn rank(&self) -> usize {
-        let mut echelon = self.clone();
-        echelon.to_row_echelon();
-        let mut zero: usize = 0;
-        for r in echelon.rows {
-            if r.is_zero() {
-                zero += 1;
-            }
-        }
-        self.row_size() - zero
+        let zeros = self.clone().to_row_echelon().rows.iter().filter(|row| row.is_zero()).count();
+        self.row_size() - zeros
     }
 
-    /// Compute the determinant of this matrix.
+    /// Calculate the determinant of this matrix.
     pub fn det(&self) -> Option<Fraction> {
         // check square matrix
         if self.row_size() != self.col_size() {
@@ -130,7 +121,7 @@ impl Matrix {
         Some(determinant)
     }
 
-    /// Compute the inverse of this matrix.
+    /// Calculate the inverse of this matrix.
     pub fn inv(&self) -> Option<Matrix> {
         // check square matrix and check invertible matrix
         if self.row_size() != self.col_size() || self.rank() != self.row_size() {
@@ -188,9 +179,8 @@ impl Matrix {
 
     /// Elementary Row Operations: Row Sum.
     pub fn e_row_sum(&mut self, i: usize, j: usize, k: Fraction) -> &Self {
-        for (e, &value) in self.clone()[j].iter().enumerate() {
-            self[i][e] += value * k;
-        }
+        let row = self[j].clone();
+        self.rows[i] += &(row * k);
         self
     }
 
@@ -209,7 +199,7 @@ impl Matrix {
             }
         }
 
-        // step 2: Transform to the row echelon form. It's so elegant, I'm a genius haha.
+        // step 2: transform to the row echelon form. It's so elegant, I'm a genius haha.
         self.rows.sort_by_key(|r| r.count_leading_zeros());
         self
     }
