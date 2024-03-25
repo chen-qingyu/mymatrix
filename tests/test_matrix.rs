@@ -89,22 +89,22 @@ fn inv() {
 }
 
 #[rstest]
-fn append() {
+fn expand() {
     assert_eq!(
-        Matrix::from([[1, 2], [3, 4]]).append_row(Matrix::create(2, 2, 0.into())),
+        Matrix::from([[1, 2], [3, 4]]).expand_row(Matrix::create(2, 2, 0.into())),
         &Matrix::from([[1, 2], [3, 4], [0, 0], [0, 0]])
     );
     assert_eq!(
-        Matrix::from([[1, 2, 3, 4, 5]]).append_row(Matrix::from([[6, 7, 8, 9, 10]])),
+        Matrix::from([[1, 2, 3, 4, 5]]).expand_row(Matrix::from([[6, 7, 8, 9, 10]])),
         &Matrix::from([[1, 2, 3, 4, 5], [6, 7, 8, 9, 10]])
     );
 
     assert_eq!(
-        Matrix::from([[1, 2], [3, 4]]).append_col(Matrix::create(2, 2, 0.into())),
+        Matrix::from([[1, 2], [3, 4]]).expand_col(Matrix::create(2, 2, 0.into())),
         &Matrix::from([[1, 2, 0, 0], [3, 4, 0, 0]])
     );
     assert_eq!(
-        Matrix::from([[1, 2, 3, 4, 5]]).append_col(Matrix::from([[6, 7, 8, 9, 10]])),
+        Matrix::from([[1, 2, 3, 4, 5]]).expand_col(Matrix::from([[6, 7, 8, 9, 10]])),
         &Matrix::from([[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]])
     );
 }

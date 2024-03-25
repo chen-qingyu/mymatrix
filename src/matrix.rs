@@ -139,7 +139,7 @@ impl Matrix {
 
         let mut echelon = self.clone();
         // generate augmented matrix [A:E]
-        echelon.append_col(Matrix::eye(self.row_size()));
+        echelon.expand_col(Matrix::eye(self.row_size()));
         // transforming [A:E] into a row echelon matrix
         echelon.to_row_echelon();
         // transform A into a diagonal matrix
@@ -157,7 +157,7 @@ impl Matrix {
     }
 
     /// Expand this matrix by rows.
-    pub fn append_row(&mut self, mut matrix: Matrix) -> &Self {
+    pub fn expand_row(&mut self, mut matrix: Matrix) -> &Self {
         utility::check_size(self.col_size(), matrix.col_size());
 
         self.rows.append(&mut matrix.rows);
@@ -165,7 +165,7 @@ impl Matrix {
     }
 
     /// Expand this matrix by columns.
-    pub fn append_col(&mut self, mut matrix: Matrix) -> &Self {
+    pub fn expand_col(&mut self, mut matrix: Matrix) -> &Self {
         utility::check_size(self.row_size(), matrix.row_size());
 
         for i in 0..self.row_size() {
