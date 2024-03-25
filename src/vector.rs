@@ -7,7 +7,7 @@ use crate::utility;
 
 use pyinrs::Fraction;
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Hash, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub struct Vector {
     pub(crate) elements: Vec<Fraction>,
 }

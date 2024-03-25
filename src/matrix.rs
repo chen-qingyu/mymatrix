@@ -8,7 +8,7 @@ use crate::{utility, Vector};
 
 use pyinrs::Fraction;
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Hash, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub struct Matrix {
     rows: Vec<Vector>,
 }
