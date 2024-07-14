@@ -6,7 +6,7 @@ license = "GPL-3.0-or-later"
 authors = ["Qingyu Chen <chen_qingyu@qq.com>"]
 description = "My simple matrix library that can perform fraction operations."
 readme = "readme.md"
-homepage = "https://github.com/chen-qingyu/mymatrix"
+repository = "https://github.com/chen-qingyu/mymatrix"
 keywords = ["matrix", "fraction"]
 
 [dependencies]
