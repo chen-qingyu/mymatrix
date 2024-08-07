@@ -89,6 +89,43 @@ fn inv() {
 }
 
 #[rstest]
+fn submatrix() {
+    let m = Matrix::from([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
+    assert_eq!(m.submatrix(0, 0), Matrix::from([[5, 6], [8, 9]]));
+    assert_eq!(m.submatrix(1, 1), Matrix::from([[1, 3], [7, 9]]));
+    assert_eq!(m.submatrix(0, 2), Matrix::from([[4, 5], [7, 8]]));
+}
+
+#[rstest]
+fn minor() {
+    assert_eq!(Matrix::from([[1, 2], [3, 4]]).minor(), Matrix::from([[4, 3], [2, 1]]));
+    assert_eq!(
+        Matrix::from([[1, 2, 3], [4, 5, 6], [7, 8, 9]]).minor(),
+        Matrix::from([[-3, -6, -3], [-6, -12, -6], [-3, -6, -3]])
+    );
+}
+
+#[rstest]
+fn cofactor() {
+    assert_eq!(Matrix::from([[1, 2], [3, 4]]).cofactor(), Matrix::from([[4, -3], [-2, 1]]));
+    assert_eq!(
+        Matrix::from([[1, 2, 3], [4, 5, 6], [7, 8, 9]]).cofactor(),
+        Matrix::from([[-3, 6, -3], [6, -12, 6], [-3, 6, -3]])
+    );
+}
+
+#[rstest]
+fn adj() {
+    let m1 = Matrix::from([[1, 2], [3, 4]]);
+    assert_eq!(m1.adj(), Matrix::from([[4, -2], [-3, 1]]));
+    assert_eq!(m1.adj() * (Fraction::from(1) / m1.det().unwrap()), m1.inv().unwrap()); // inv(A) = (1/det(A)) * adj(A)
+
+    let m2 = Matrix::from([[1, 2, 3], [4, 5, 6], [7, 8, 0]]);
+    assert_eq!(m2.adj(), Matrix::from([[-48, 24, -3], [42, -21, 6], [-3, 6, -3]]));
+    assert_eq!(m2.adj() * (Fraction::from(1) / m2.det().unwrap()), m2.inv().unwrap());
+}
+
+#[rstest]
 fn expand() {
     assert_eq!(
         Matrix::from([[1, 2], [3, 4]]).expand_row(Matrix::zeros(2, 2)),

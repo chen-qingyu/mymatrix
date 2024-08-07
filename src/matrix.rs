@@ -164,6 +164,50 @@ impl Matrix {
         Some(echelon.split_col(self.row_size()).1)
     }
 
+    /// Return the matrix that removed the i-th row and j-th column, 0 <= i, j < n.
+    pub fn submatrix(&self, i: usize, j: usize) -> Matrix {
+        let mut submatrix = Vec::with_capacity(self.row_size() - 1);
+        for r in 0..self.row_size() {
+            if r != i {
+                let mut row = Vec::with_capacity(self.col_size() - 1);
+                row.extend_from_slice(&self[r].elements[..j]);
+                row.extend_from_slice(&self[r].elements[j + 1..]);
+                submatrix.push(row);
+            }
+        }
+        Matrix::from(submatrix)
+    }
+
+    /// Return the minor matrix.
+    pub fn minor(&self) -> Matrix {
+        let mut m = Matrix::zeros(self.row_size(), self.col_size());
+        for r in 0..m.row_size() {
+            for c in 0..m.col_size() {
+                m[r][c] = self.submatrix(r, c).det().unwrap();
+            }
+        }
+        m
+    }
+
+    /// Return the co-factor matrix.
+    pub fn cofactor(&self) -> Matrix {
+        let mut m = self.minor();
+        for r in 0..m.row_size() {
+            for c in 0..self.col_size() {
+                // a11 -> a00, r+c parity unchanged
+                if (r + c) & 1 == 1 {
+                    m[r][c] = -m[r][c];
+                }
+            }
+        }
+        m
+    }
+
+    /// Return the adjugate matrix.
+    pub fn adj(&self) -> Matrix {
+        self.cofactor().transpose()
+    }
+
     /// Expand this matrix by rows.
     pub fn expand_row(&mut self, mut matrix: Matrix) -> &Self {
         utility::check_size(self.col_size(), matrix.col_size());
