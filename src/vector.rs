@@ -48,15 +48,15 @@ impl Vector {
         self.elements.iter()
     }
 
-    /// Calculate the length of the vector.
-    pub fn length(&self) -> f64 {
+    /// Calculate the norm of the vector.
+    pub fn norm(&self) -> f64 {
         utility::check_empty(self.size());
 
-        let mut length = 0.0;
+        let mut norm = 0.0;
         for i in 0..self.size() {
-            length += f64::from(self.elements[i] * self.elements[i]);
+            norm += f64::from(self.elements[i] * self.elements[i]);
         }
-        length.sqrt()
+        norm.sqrt()
     }
 
     /// Calculate the number of leading zeros for this vector.
@@ -91,7 +91,7 @@ impl Vector {
         utility::check_empty(self.size());
         utility::check_size(self.size(), vector.size());
 
-        f64::from(self * vector).abs() == self.length() * vector.length()
+        f64::from(self * vector).abs() == self.norm() * vector.norm()
     }
 
     /// Return the cross product of two vectors.

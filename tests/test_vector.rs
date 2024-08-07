@@ -48,10 +48,10 @@ fn access(mut setup: Fixture) {
 }
 
 #[rstest]
-fn length() {
-    assert_eq!(Vector::from([0]).length(), 0.0);
-    assert_eq!(Vector::from([1]).length(), 1.0);
-    assert_eq!(Vector::from([3, 4]).length(), 5.0);
+fn norm() {
+    assert_eq!(Vector::from([0]).norm(), 0.0);
+    assert_eq!(Vector::from([1]).norm(), 1.0);
+    assert_eq!(Vector::from([3, 4]).norm(), 5.0);
 }
 
 #[rstest]
