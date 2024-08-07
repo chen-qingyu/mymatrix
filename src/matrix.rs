@@ -302,17 +302,28 @@ impl IndexMut<usize> for Matrix {
 
 impl Display for Matrix {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if self.rows.is_empty() {
-            return write!(f, "[[]]");
+        writeln!(f, "[")?;
+
+        // calc the max width of element
+        let mut width = 0;
+        for i in 0..self.row_size() {
+            for j in 0..self.col_size() {
+                width = width.max(format!("{}", self[i][j]).len());
+            }
         }
 
-        writeln!(f, "[[")?;
+        // align right, fill with space
         for i in 0..self.row_size() {
-            let s = self.rows[i].to_string();
-            let s = s.strip_prefix('[').unwrap().strip_suffix(']').unwrap();
-            writeln!(f, "{s};")?;
+            for j in 0..self.col_size() {
+                write!(f, "{:>width$}", format!("{}", self[i][j]))?;
+                if j != self.col_size() - 1 {
+                    write!(f, " ")?;
+                }
+            }
+            writeln!(f)?;
         }
-        write!(f, "]]")
+
+        write!(f, "]")
     }
 }
 

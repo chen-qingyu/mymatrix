@@ -201,7 +201,18 @@ fn mul() {
 
 #[rstest]
 fn format(setup: Fixture) {
-    assert_eq!(format!("{}", setup.empty), "[[]]");
-    assert_eq!(format!("{}", setup.one), "[[\n1;\n]]");
-    assert_eq!(format!("{}", setup.some), "[[\n1 2 3;\n4 5 6;\n]]");
+    assert_eq!(format!("{}", setup.empty), "[\n]");
+    assert_eq!(format!("{}", setup.one), "[\n1\n]");
+    assert_eq!(format!("{}", setup.some), "[\n1 2 3\n4 5 6\n]");
+
+    assert_eq!(
+        format!(
+            "{}",
+            Matrix::from([[Fraction::from((-11, 6)), Fraction::from((5, 6))], [Fraction::from((5, 3)), Fraction::from((-2, 3))]])
+        ),
+        "[
+-11/6   5/6
+  5/3  -2/3
+]"
+    );
 }
