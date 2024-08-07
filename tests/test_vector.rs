@@ -155,5 +155,8 @@ fn format(setup: Fixture) {
     assert_eq!(format!("{}", setup.one), "[1]");
     assert_eq!(format!("{}", setup.some), "[1 2 3 4 5]");
 
-    assert_eq!(format!("{}", Vector::from([Fraction::from((3, 4)), Fraction::from((5, 6))])), "[3/4 5/6]");
+    assert_eq!(
+        format!("{}", Vector::from([Fraction::from((-3, 4)), Fraction::new(), Fraction::from((5, 6))])),
+        "[-3/4    0  5/6]"
+    );
 }

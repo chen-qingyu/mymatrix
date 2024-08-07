@@ -30,7 +30,7 @@ use mymatrix::{Fraction, Vector, Matrix};
 // Vector dot product
 Vector::from([1, 2, 3]) * Vector::from([4, 5, 6]); // 32
 // Vector cross product
-Vector::cross(&[1, 2, 3].into(), &[4, 5, 6].into()); // [-3 6 -3]
+Vector::cross(&[1, 2, 3].into(), &[4, 5, 6].into()); // [-3  6 -3]
 // Vector scalar product
 Vector::from([1, 2, 3]) * Fraction::from((2, 5)); // [2/5 4/5 6/5]
 

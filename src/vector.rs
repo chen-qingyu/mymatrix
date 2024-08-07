@@ -151,12 +151,21 @@ impl IndexMut<usize> for Vector {
 impl Display for Vector {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "[")?;
-        for i in 0..self.elements.len() {
-            if i > 0 {
+
+        // calc the max width of element
+        let mut width = 0;
+        for i in 0..self.size() {
+            width = width.max(format!("{}", self[i]).len());
+        }
+
+        // align right, fill with space
+        for i in 0..self.size() {
+            if i != 0 {
                 write!(f, " ")?;
             }
-            write!(f, "{}", self.elements[i])?;
+            write!(f, "{:>width$}", format!("{}", self[i]))?;
         }
+
         write!(f, "]")
     }
 }

@@ -315,10 +315,10 @@ impl Display for Matrix {
         // align right, fill with space
         for i in 0..self.row_size() {
             for j in 0..self.col_size() {
-                write!(f, "{:>width$}", format!("{}", self[i][j]))?;
-                if j != self.col_size() - 1 {
+                if j != 0 {
                     write!(f, " ")?;
                 }
+                write!(f, "{:>width$}", format!("{}", self[i][j]))?;
             }
             writeln!(f)?;
         }
