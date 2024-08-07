@@ -18,19 +18,19 @@ impl Vector {
         Self { elements: Vec::new() }
     }
 
+    /// Create an n-dimensional vector with all identical elements.
+    pub fn create(n: usize, value: Fraction) -> Vector {
+        Self { elements: [value].repeat(n) }
+    }
+
     /// Create an n-dimensional vector with all 0 elements.
     pub fn zeros(n: usize) -> Vector {
-        Self { elements: [0.into()].repeat(n) }
+        Vector::create(n, 0.into())
     }
 
     /// Create an n-dimensional vector with all 1 elements.
     pub fn ones(n: usize) -> Vector {
-        Self { elements: [1.into()].repeat(n) }
-    }
-
-    /// Create an n-dimensional vector with all identical elements.
-    pub fn create(n: usize, value: Fraction) -> Vector {
-        Self { elements: [value].repeat(n) }
+        Vector::create(n, 1.into())
     }
 
     /// Returns the number of elements in the vector.

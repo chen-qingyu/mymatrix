@@ -18,24 +18,6 @@ impl Matrix {
         Matrix { rows: Vec::new() }
     }
 
-    /// Create a row x col matrix with all 0 elements.
-    pub fn zeros(row: usize, col: usize) -> Matrix {
-        let mut rows = Vec::with_capacity(row);
-        for _ in 0..row {
-            rows.push(Vector::zeros(col));
-        }
-        Matrix { rows }
-    }
-
-    /// Create a row x col matrix with all 1 elements.
-    pub fn ones(row: usize, col: usize) -> Matrix {
-        let mut rows = Vec::with_capacity(row);
-        for _ in 0..row {
-            rows.push(Vector::ones(col));
-        }
-        Matrix { rows }
-    }
-
     /// Create a row x col matrix with all identical elements.
     pub fn create(row: usize, col: usize, value: Fraction) -> Matrix {
         let mut rows = Vec::with_capacity(row);
@@ -43,6 +25,16 @@ impl Matrix {
             rows.push(Vector::create(col, value));
         }
         Matrix { rows }
+    }
+
+    /// Create a row x col matrix with all 0 elements.
+    pub fn zeros(row: usize, col: usize) -> Matrix {
+        Matrix::create(row, col, 0.into())
+    }
+
+    /// Create a row x col matrix with all 1 elements.
+    pub fn ones(row: usize, col: usize) -> Matrix {
+        Matrix::create(row, col, 1.into())
     }
 
     /// Generate an n-order unit matrix.
