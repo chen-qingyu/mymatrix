@@ -52,7 +52,7 @@ fn access(mut setup: Fixture) {
 
 #[rstest]
 fn rank() {
-    assert_eq!(Matrix::create(2, 2, 1.into()).rank(), 1);
+    assert_eq!(Matrix::ones(2, 2).rank(), 1);
     assert_eq!(Matrix::from([[1, 2, 3], [4, 5, 6]]).rank(), 2);
     assert_eq!(Matrix::from([[1, 2], [3, 4], [5, 6]]).rank(), 2);
     assert_eq!(Matrix::from([[1, 2, 3], [4, 5, 6], [7, 8, 9]]).rank(), 2);
@@ -91,7 +91,7 @@ fn inv() {
 #[rstest]
 fn expand() {
     assert_eq!(
-        Matrix::from([[1, 2], [3, 4]]).expand_row(Matrix::create(2, 2, 0.into())),
+        Matrix::from([[1, 2], [3, 4]]).expand_row(Matrix::zeros(2, 2)),
         &Matrix::from([[1, 2], [3, 4], [0, 0], [0, 0]])
     );
     assert_eq!(
@@ -100,7 +100,7 @@ fn expand() {
     );
 
     assert_eq!(
-        Matrix::from([[1, 2], [3, 4]]).expand_col(Matrix::create(2, 2, 0.into())),
+        Matrix::from([[1, 2], [3, 4]]).expand_col(Matrix::zeros(2, 2)),
         &Matrix::from([[1, 2, 0, 0], [3, 4, 0, 0]])
     );
     assert_eq!(
@@ -119,7 +119,7 @@ fn elementary_row_operations() {
 
 #[rstest]
 fn to_row_echelon() {
-    assert_eq!(Matrix::create(2, 2, 1.into()).to_row_echelon(), &Matrix::from([[1, 1], [0, 0]]));
+    assert_eq!(Matrix::ones(2, 2).to_row_echelon(), &Matrix::from([[1, 1], [0, 0]]));
     assert_eq!(Matrix::from([[1, 2, 3], [4, 5, 6]]).to_row_echelon(), &Matrix::from([[1, 2, 3], [0, -3, -6]]));
     assert_eq!(Matrix::from([[1, 2], [3, 4], [5, 6]]).to_row_echelon(), &Matrix::from([[1, 2], [0, -2], [0, 0]]));
 }

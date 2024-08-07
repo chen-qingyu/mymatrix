@@ -1,7 +1,6 @@
 use std::{
     fmt::Display,
     ops::{Add, AddAssign, Index, IndexMut, Mul, MulAssign, Sub, SubAssign},
-    usize,
 };
 
 use crate::{utility, Vector};
@@ -14,23 +13,41 @@ pub struct Matrix {
 }
 
 impl Matrix {
-    /// Construct a new matrix object.
+    /// Create a new matrix object.
     pub fn new() -> Matrix {
         Matrix { rows: Vec::new() }
     }
 
-    /// Construct a matrix with row x col identical elements.
-    pub fn create(row: usize, col: usize, value: Fraction) -> Matrix {
-        let mut m = Matrix::new();
+    /// Create a row x col matrix with all 0 elements.
+    pub fn zeros(row: usize, col: usize) -> Matrix {
+        let mut rows = Vec::with_capacity(row);
         for _ in 0..row {
-            m.rows.push(Vector::create(col, value));
+            rows.push(Vector::zeros(col));
         }
-        m
+        Matrix { rows }
+    }
+
+    /// Create a row x col matrix with all 1 elements.
+    pub fn ones(row: usize, col: usize) -> Matrix {
+        let mut rows = Vec::with_capacity(row);
+        for _ in 0..row {
+            rows.push(Vector::ones(col));
+        }
+        Matrix { rows }
+    }
+
+    /// Create a row x col matrix with all identical elements.
+    pub fn create(row: usize, col: usize, value: Fraction) -> Matrix {
+        let mut rows = Vec::with_capacity(row);
+        for _ in 0..row {
+            rows.push(Vector::create(col, value));
+        }
+        Matrix { rows }
     }
 
     /// Generate an n-order unit matrix.
     pub fn eye(n: usize) -> Matrix {
-        let mut m = Matrix::create(n, n, 0.into());
+        let mut m = Matrix::zeros(n, n);
         for i in 0..n {
             m[i][i] = 1.into();
         }
@@ -89,7 +106,7 @@ impl Matrix {
 
     /// Returns the transpose of the matrix.
     pub fn transpose(&self) -> Matrix {
-        let mut result = Matrix::create(self.col_size(), self.row_size(), 0.into());
+        let mut result = Matrix::zeros(self.col_size(), self.row_size());
 
         for i in 0..self.row_size() {
             for j in 0..self.col_size() {
@@ -205,17 +222,31 @@ impl Matrix {
     }
 }
 
-impl<const R: usize, const C: usize> From<[[i32; C]; R]> for Matrix {
-    fn from(value: [[i32; C]; R]) -> Self {
-        let v: [Vector; R] = value.map(|x| x.into());
-        Matrix { rows: Vec::from(v) }
+impl<const R: usize, const C: usize> From<[[Fraction; C]; R]> for Matrix {
+    fn from(value: [[Fraction; C]; R]) -> Self {
+        let rows = Vec::from(value.map(Vector::from));
+        Matrix { rows }
     }
 }
 
-impl<const R: usize, const C: usize> From<[[Fraction; C]; R]> for Matrix {
-    fn from(value: [[Fraction; C]; R]) -> Self {
-        let v: [Vector; R] = value.map(|x| x.into());
-        Matrix { rows: Vec::from(v) }
+impl<const R: usize, const C: usize> From<[[i32; C]; R]> for Matrix {
+    fn from(value: [[i32; C]; R]) -> Self {
+        let rows = Vec::from(value.map(Vector::from));
+        Matrix { rows }
+    }
+}
+
+impl From<Vec<Vec<Fraction>>> for Matrix {
+    fn from(value: Vec<Vec<Fraction>>) -> Self {
+        let rows = value.into_iter().map(Vector::from).collect();
+        Matrix { rows }
+    }
+}
+
+impl From<Vec<Vec<i32>>> for Matrix {
+    fn from(value: Vec<Vec<i32>>) -> Self {
+        let rows = value.into_iter().map(Vector::from).collect();
+        Matrix { rows }
     }
 }
 
@@ -275,7 +306,7 @@ impl MulAssign for Matrix {
     fn mul_assign(&mut self, rhs: Self) {
         utility::check_size(self.col_size(), rhs.row_size());
 
-        let mut result = Matrix::create(self.row_size(), rhs.col_size(), 0.into());
+        let mut result = Matrix::zeros(self.row_size(), rhs.col_size());
         let mt = rhs.transpose();
         for r in 0..self.row_size() {
             for c in 0..rhs.col_size() {

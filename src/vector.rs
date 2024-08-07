@@ -13,12 +13,22 @@ pub struct Vector {
 }
 
 impl Vector {
-    /// Construct a new vector object.
+    /// Create a new vector object.
     pub fn new() -> Vector {
         Self { elements: Vec::new() }
     }
 
-    /// Construct a vector with n identical elements.
+    /// Create an n-dimensional vector with all 0 elements.
+    pub fn zeros(n: usize) -> Vector {
+        Self { elements: [0.into()].repeat(n) }
+    }
+
+    /// Create an n-dimensional vector with all 1 elements.
+    pub fn ones(n: usize) -> Vector {
+        Self { elements: [1.into()].repeat(n) }
+    }
+
+    /// Create an n-dimensional vector with all identical elements.
     pub fn create(n: usize, value: Fraction) -> Vector {
         Self { elements: [value].repeat(n) }
     }
@@ -104,8 +114,23 @@ impl<const N: usize> From<[Fraction; N]> for Vector {
 
 impl<const N: usize> From<[i32; N]> for Vector {
     fn from(value: [i32; N]) -> Self {
-        let v: [Fraction; N] = value.map(|x| x.into());
-        Self { elements: Vec::from(v) }
+        Self {
+            elements: Vec::from(value.map(Fraction::from)),
+        }
+    }
+}
+
+impl From<Vec<Fraction>> for Vector {
+    fn from(value: Vec<Fraction>) -> Self {
+        Self { elements: value }
+    }
+}
+
+impl From<Vec<i32>> for Vector {
+    fn from(value: Vec<i32>) -> Self {
+        Self {
+            elements: value.into_iter().map(Fraction::from).collect(),
+        }
     }
 }
 
