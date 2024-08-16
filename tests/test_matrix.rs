@@ -126,6 +126,15 @@ fn adj() {
 }
 
 #[rstest]
+fn is_symmetric(setup: Fixture) {
+    assert_eq!(setup.empty.is_symmetric(), true);
+    assert_eq!(setup.one.is_symmetric(), true);
+    assert_eq!(setup.some.clone().is_symmetric(), false);
+    assert_eq!((setup.some.clone() * setup.some.transpose()).is_symmetric(), true);
+    assert_eq!(Matrix::from([[1, 2, 3], [4, 5, 6], [7, 8, 0]]).is_symmetric(), false);
+}
+
+#[rstest]
 fn expand() {
     assert_eq!(
         Matrix::from([[1, 2], [3, 4]]).expand_row(Matrix::zeros(2, 2)),

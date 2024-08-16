@@ -200,6 +200,23 @@ impl Matrix {
         self.cofactor().transpose()
     }
 
+    /// Returns `true` if the matrix is symmetric.
+    pub fn is_symmetric(&self) -> bool {
+        if self.row_size() != self.col_size() {
+            return false;
+        }
+
+        for r in 0..self.row_size() {
+            for c in 0..r {
+                if self.rows[r][c] != self.rows[c][r] {
+                    return false;
+                }
+            }
+        }
+
+        true
+    }
+
     /// Expand this matrix by rows.
     pub fn expand_row(&mut self, mut matrix: Matrix) -> &Self {
         utility::check_size(self.col_size(), matrix.col_size());
