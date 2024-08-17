@@ -101,6 +101,7 @@ fn mul() {
 
 #[rstest]
 fn scalar_multiplication() {
+    assert_eq!(Fraction::from(1) * Vector::from([1]), Vector::from([1]));
     assert_eq!(Vector::from([1]) * Fraction::from(1), Vector::from([1]));
     assert_eq!(Vector::from([1, 2, 3]) * Fraction::from(2), Vector::from([2, 4, 6]));
     assert_eq!(

@@ -1,6 +1,6 @@
 use std::{
     fmt::Display,
-    ops::{Add, AddAssign, Index, IndexMut, Mul, MulAssign, Sub, SubAssign},
+    ops::{Index, IndexMut},
 };
 
 use crate::{utility, Vector};
@@ -250,7 +250,7 @@ impl Matrix {
     /// Elementary Row Operations: Row Sum.
     pub fn e_row_sum(&mut self, i: usize, j: usize, k: Fraction) -> &Self {
         let row = self[j].clone();
-        self.rows[i] += &(row * k);
+        self.rows[i] += row * k;
         self
     }
 
@@ -344,83 +344,57 @@ impl Display for Matrix {
     }
 }
 
-impl AddAssign for Matrix {
-    fn add_assign(&mut self, rhs: Self) {
-        utility::check_size(self.row_size(), rhs.row_size());
-        utility::check_size(self.col_size(), rhs.col_size());
+auto_ops::impl_op_ex!(+=|a: &mut Matrix, b: &Matrix| {
+    utility::check_size(a.row_size(), b.row_size());
+    utility::check_size(a.col_size(), b.col_size());
 
-        for r in 0..self.row_size() {
-            self.rows[r] += &rhs[r];
+    for r in 0..a.row_size() {
+        a[r] += &b[r];
+    }
+});
+
+auto_ops::impl_op_ex!(+|a: &Matrix, b: &Matrix| -> Matrix {
+    let mut a = a.clone();
+    a += b;
+    a
+});
+
+auto_ops::impl_op_ex!(-=|a: &mut Matrix, b: &Matrix| {
+    utility::check_size(a.row_size(), b.row_size());
+    utility::check_size(a.col_size(), b.col_size());
+
+    for r in 0..a.row_size() {
+        a[r] -= &b[r];
+    }
+});
+
+auto_ops::impl_op_ex!(-|a: &Matrix, b: &Matrix| -> Matrix {
+    let mut a = a.clone();
+    a -= b;
+    a
+});
+
+auto_ops::impl_op_ex!(*=|a: &mut Matrix, b: Fraction| {
+    for r in 0..a.row_size() {
+        a.rows[r] *= b;
+    }
+});
+
+auto_ops::impl_op_ex_commutative!(*|a: Matrix, b: Fraction| -> Matrix {
+    let mut a = a;
+    a *= b;
+    a
+});
+
+auto_ops::impl_op_ex!(*|a: &Matrix, b: &Matrix| -> Matrix {
+    utility::check_size(a.col_size(), b.row_size());
+
+    let mut result = Matrix::zeros(a.row_size(), b.col_size());
+    let rt = b.transpose();
+    for r in 0..a.row_size() {
+        for c in 0..b.col_size() {
+            result[r][c] = &a[r] * &rt[c];
         }
     }
-}
-
-impl SubAssign for Matrix {
-    fn sub_assign(&mut self, rhs: Self) {
-        utility::check_size(self.row_size(), rhs.row_size());
-        utility::check_size(self.col_size(), rhs.col_size());
-
-        for r in 0..self.row_size() {
-            self.rows[r] -= &rhs[r];
-        }
-    }
-}
-
-impl MulAssign for Matrix {
-    fn mul_assign(&mut self, rhs: Self) {
-        utility::check_size(self.col_size(), rhs.row_size());
-
-        let mut result = Matrix::zeros(self.row_size(), rhs.col_size());
-        let mt = rhs.transpose();
-        for r in 0..self.row_size() {
-            for c in 0..rhs.col_size() {
-                result[r][c] = &self[r] * &mt[c];
-            }
-        }
-        *self = result;
-    }
-}
-
-impl MulAssign<Fraction> for Matrix {
-    fn mul_assign(&mut self, rhs: Fraction) {
-        for r in 0..self.row_size() {
-            self.rows[r] *= rhs;
-        }
-    }
-}
-
-impl Add for Matrix {
-    type Output = Matrix;
-
-    fn add(mut self, rhs: Self) -> Self::Output {
-        self += rhs;
-        self
-    }
-}
-
-impl Sub for Matrix {
-    type Output = Matrix;
-
-    fn sub(mut self, rhs: Self) -> Self::Output {
-        self -= rhs;
-        self
-    }
-}
-
-impl Mul for Matrix {
-    type Output = Matrix;
-
-    fn mul(mut self, rhs: Self) -> Self::Output {
-        self *= rhs;
-        self
-    }
-}
-
-impl Mul<Fraction> for Matrix {
-    type Output = Matrix;
-
-    fn mul(mut self, rhs: Fraction) -> Self::Output {
-        self *= rhs;
-        self
-    }
-}
+    result
+});
