@@ -5,9 +5,9 @@ _My simple matrix library that can perform fraction operations._
 ## 1. Attribute
 
 - Name: MyMatrix.
-- Language: Rust, requires version rustc >= `1.75.0`.
+- Language: Rust, requires rustc version >= `1.75.0`.
 - Goal: Write a simple matrix library that can perform fraction operations.
-- Module: Vector, Matrix
+- Module: Fraction, Vector, Matrix
 - Style: Follow Rust's official recommended style.
 - Test: Using [rstest](https://crates.io/crates/rstest) for unit testing and ensure that all tests passed.
 - Security: There is no `unsafe` code block.
@@ -63,5 +63,5 @@ let d = Matrix::eye(2);
 
 // inv(A) = (1/det(A)) * adj(A)
 let A = Matrix::from([[1, 2, 3], [4, 5, 6], [7, 8, 0]]);
-assert_eq!(A.inv().unwrap(), A.adj() * (Fraction::from(1) / A.det().unwrap()));
+assert_eq!(A.inv().unwrap(), (Fraction::from(1) / A.det().unwrap()) * A.adj());
 ```
