@@ -10,8 +10,8 @@ repository = "https://github.com/chen-qingyu/mymatrix"
 keywords = ["matrix", "fraction"]
 
 [dependencies]
-pyinrs = "1"
+pyinrs = "1.8"
 auto_ops = "0.3"
 
 [dev-dependencies]
-rstest = "0.18.2"
+rstest = "0.22"
