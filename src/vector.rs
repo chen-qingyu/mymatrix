@@ -7,6 +7,7 @@ use crate::utility;
 
 use pyinrs::Fraction;
 
+/// Vector with fractions as elements.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub struct Vector {
     pub(crate) elements: Vec<Fraction>,

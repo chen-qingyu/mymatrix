@@ -7,6 +7,7 @@ use crate::{utility, Vector};
 
 use pyinrs::Fraction;
 
+/// Matrix with fractions as elements.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub struct Matrix {
     rows: Vec<Vector>,

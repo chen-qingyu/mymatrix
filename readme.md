@@ -4,14 +4,11 @@ _My simple matrix library that can perform fraction operations._
 
 ## 1. Attribute
 
-- Name: MyMatrix.
-- Language: Rust, requires rustc version >= `1.75.0`.
-- Goal: Write a simple matrix library that can perform fraction operations.
+- Name: MyMatrix
+- Goal: Provide a simple matrix library that can perform fraction operations
 - Module: Fraction, Vector, Matrix
-- Style: Follow Rust's official recommended style.
-- Test: Using [rstest](https://crates.io/crates/rstest) for unit testing and ensure that all tests passed.
-- Security: There is no `unsafe` code block.
-- Document: Using `cargo doc --open` to open documents.
+- Test: Using [rstest](https://crates.io/crates/rstest) for unit tests and ensure all tests passed
+- Security: There is no `unsafe` code block
 
 ## 2. Usage
 
