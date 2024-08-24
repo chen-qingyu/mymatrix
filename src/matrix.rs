@@ -110,7 +110,7 @@ impl Matrix {
 
     /// Calculate the rank of this matrix.
     pub fn rank(&self) -> usize {
-        let zeros = self.clone().to_row_echelon().rows.iter().filter(|row| row.is_zero()).count();
+        let zeros = self.rref().rows.iter().filter(|row| row.is_zero()).count();
         self.row_size() - zeros
     }
 
@@ -121,11 +121,10 @@ impl Matrix {
             return None;
         }
 
-        let mut echelon = self.clone();
-        echelon.to_row_echelon();
+        let (_l, u) = self.lu_decomposition();
         let mut determinant = Fraction::from(1);
-        for i in 0..echelon.row_size() {
-            determinant *= echelon[i][i];
+        for i in 0..u.row_size() {
+            determinant *= u[i][i];
         }
         Some(determinant)
     }
@@ -137,11 +136,8 @@ impl Matrix {
             return None;
         }
 
-        let mut echelon = self.clone();
-        // generate augmented matrix [A:E]
-        echelon.expand_col(Matrix::identity(self.row_size()));
-        // transforming [A:E] into reduced row echelon form
-        echelon.to_reduced_row_echelon();
+        // generate augmented matrix [A:E] and transform [A:E] to reduced row echelon form
+        let echelon = self.clone().expand_col(Matrix::identity(self.row_size())).rref();
 
         // at this point, the original E is the inverse of A
         Some(echelon.split_col(self.row_size()).1)
@@ -245,47 +241,74 @@ impl Matrix {
         self
     }
 
-    /// Transform this matrix to general row echelon form.
-    pub fn to_row_echelon(&mut self) -> &Self {
+    /// Transform this matrix to reduced row echelon form.
+    pub fn rref(&self) -> Self {
+        let mut m = self.clone();
+
         // step 1: Gaussian elimination
-        for i in 0..self.row_size() {
+        for i in 0..m.row_size() {
             let mut j: usize = 0;
-            while j < self.col_size() && self.rows[i][j] == 0.into() {
+            while j < m.col_size() && m.rows[i][j] == 0.into() {
                 j += 1;
             }
-            for k in i + 1..self.row_size() {
-                if j < self.col_size() && self.rows[i][j] != 0.into() {
-                    self.e_row_sum(k, i, -(self.rows[k][j] / self.rows[i][j]));
+            for k in i + 1..m.row_size() {
+                if j < m.col_size() && m.rows[i][j] != 0.into() {
+                    m.e_row_sum(k, i, -(m.rows[k][j] / m.rows[i][j]));
                 }
             }
         }
 
         // step 2: transform to the row echelon form. It's so elegant, I'm a genius haha.
-        self.rows.sort_by_key(|r| r.count_leading_zeros());
-        self
-    }
+        m.rows.sort_by_key(|r| r.count_leading_zeros());
 
-    /// Transform this matrix to reduced row echelon form.
-    pub fn to_reduced_row_echelon(&mut self) -> &Self {
-        self.to_row_echelon();
+        let n = usize::min(m.row_size(), m.col_size());
 
-        let n = usize::min(self.row_size(), self.col_size());
-
+        // step 3: eliminate elements above the pivot
         for c in 0..n {
             for r in 0..c {
-                if self[c][c] != 0.into() {
-                    self.e_row_sum(r, c, -(self[r][c] / self[c][c]));
+                if m[c][c] != 0.into() {
+                    m.e_row_sum(r, c, -(m[r][c] / m[c][c]));
                 }
             }
         }
 
+        // step 4: make pivot equals 1
         for r in 0..n {
-            if self[r][r] != 0.into() {
-                self.e_scalar_multiplication(r, Fraction::from(1) / self[r][r]);
+            if m[r][r] != 0.into() {
+                m.e_scalar_multiplication(r, Fraction::from(1) / m[r][r]);
             }
         }
 
-        self
+        m
+    }
+
+    /// LU decomposition, use Doolittle algorithm.
+    pub fn lu_decomposition(&self) -> (Self, Self) {
+        utility::check_size(self.row_size(), self.col_size());
+
+        let n = self.row_size();
+        let mut l = Matrix::identity(n);
+        let mut u = Matrix::zeros(n, n);
+
+        for i in 0..n {
+            for j in 0..(i + 1) {
+                let mut sum = Fraction::new();
+                for k in 0..j {
+                    sum += l[j][k] * u[k][i];
+                }
+                u[j][i] = self[j][i] - sum;
+            }
+
+            for j in (i + 1)..n {
+                let mut sum = Fraction::new();
+                for k in 0..i {
+                    sum += l[j][k] * u[k][i];
+                }
+                l[j][i] = (self[j][i] - sum) / u[i][i];
+            }
+        }
+
+        (l, u)
     }
 }
 

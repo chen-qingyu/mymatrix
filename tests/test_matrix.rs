@@ -164,19 +164,21 @@ fn elementary_row_operations() {
 }
 
 #[rstest]
-fn to_row_echelon() {
-    assert_eq!(Matrix::ones(2, 2).to_row_echelon(), &Matrix::from([[1, 1], [0, 0]]));
-    assert_eq!(Matrix::from([[1, 2, 3], [4, 5, 6]]).to_row_echelon(), &Matrix::from([[1, 2, 3], [0, -3, -6]]));
-    assert_eq!(Matrix::from([[1, 2], [3, 4], [5, 6]]).to_row_echelon(), &Matrix::from([[1, 2], [0, -2], [0, 0]]));
+fn rref() {
+    assert_eq!(Matrix::ones(2, 2).rref(), Matrix::from([[1, 1], [0, 0]]));
+
+    assert_eq!(Matrix::from([[1, 2, 3], [4, 5, 6]]).rref(), Matrix::from([[1, 0, -1], [0, 1, 2]]));
+    assert_eq!(Matrix::from([[1, 2], [3, 4], [5, 6]]).rref(), Matrix::from([[1, 0], [0, 1], [0, 0]]));
+
+    assert_eq!(Matrix::from([[1, 2], [3, 4], [5, 6], [7, 8]]).rref(), Matrix::from([[1, 0], [0, 1], [0, 0], [0, 0]]));
+    assert_eq!(Matrix::from([[1, 2, 3, 4], [5, 6, 7, 8]]).rref(), Matrix::from([[1, 0, -1, -2], [0, 1, 2, 3]]));
 }
 
 #[rstest]
-fn to_reduced_row_echelon() {
-    assert_eq!(Matrix::ones(2, 2).to_reduced_row_echelon(), &Matrix::from([[1, 1], [0, 0]]));
-    assert_eq!(Matrix::from([[1, 2, 3], [4, 5, 6]]).to_reduced_row_echelon(), &Matrix::from([[1, 0, -1], [0, 1, 2]]));
+fn lu_decomposition() {
     assert_eq!(
-        Matrix::from([[1, 2], [3, 4], [5, 6]]).to_reduced_row_echelon(),
-        &Matrix::from([[1, 0], [0, 1], [0, 0]])
+        Matrix::from([[2, 3, 1], [4, 7, 1], [6, 7, 3]]).lu_decomposition(),
+        (Matrix::from([[1, 0, 0], [2, 1, 0], [3, -2, 1]]), Matrix::from([[2, 3, 1], [0, 1, -1], [0, 0, -2]]))
     );
 }
 
