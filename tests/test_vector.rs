@@ -48,78 +48,12 @@ fn access(mut setup: Fixture) {
 }
 
 #[rstest]
-fn norm() {
-    assert_eq!(Vector::from([0]).norm(), 0.0);
-    assert_eq!(Vector::from([1]).norm(), 1.0);
-    assert_eq!(Vector::from([3, 4]).norm(), 5.0);
-}
-
-#[rstest]
-fn count_leading_zeros() {
-    assert_eq!(Vector::from([0]).count_leading_zeros(), 1);
-    assert_eq!(Vector::from([0, 1]).count_leading_zeros(), 1);
-    assert_eq!(Vector::from([0, 0]).count_leading_zeros(), 2);
-    assert_eq!(Vector::from([0, 0, 1]).count_leading_zeros(), 2);
-    assert_eq!(Vector::from([0, 0, 0, 1, 2, 3]).count_leading_zeros(), 3);
-    assert_eq!(Vector::from([0, 0, 0, 1, 2, 3, 0, 0, 0]).count_leading_zeros(), 3);
-}
-
-#[rstest]
 fn is_zero() {
     assert!(Vector::from([0]).is_zero());
     assert!(Vector::from([0, 0, 0]).is_zero());
 
     assert!(!Vector::from([1]).is_zero());
     assert!(!Vector::from([0, 0, 1]).is_zero());
-}
-
-#[rstest]
-fn add() {
-    assert_eq!(Vector::from([1]) + Vector::from([1]), Vector::from([2]));
-    assert_eq!(Vector::from([1, 2, 3]) + Vector::from([4, 5, 6]), Vector::from([5, 7, 9]));
-    assert_eq!(Vector::from([1, 2]) + Vector::from([1, 2]) + Vector::from([1, 2]), Vector::from([3, 6]));
-}
-
-#[rstest]
-#[should_panic(expected = "Error: The dimensions mismatch.")]
-fn bad_add() {
-    let _ = Vector::from([1]) + Vector::from([1, 2]);
-}
-
-#[rstest]
-fn sub() {
-    assert_eq!(Vector::from([1]) - Vector::from([1]), Vector::from([0]));
-    assert_eq!(Vector::from([1, 2, 3]) - Vector::from([4, 5, 6]), Vector::from([-3, -3, -3]));
-    assert_eq!(Vector::from([1, 2]) - Vector::from([1, 2]) - Vector::from([1, 2]), Vector::from([-1, -2]));
-}
-
-#[rstest]
-fn mul() {
-    assert_eq!(Vector::from([1]) * Vector::from([1]), 1.into());
-    assert_eq!(Vector::from([1, 2, 3]) * Vector::from([4, 5, 6]), 32.into());
-}
-
-#[rstest]
-fn scalar_multiplication() {
-    assert_eq!(Fraction::from(1) * Vector::from([1]), Vector::from([1]));
-    assert_eq!(Vector::from([1]) * Fraction::from(1), Vector::from([1]));
-    assert_eq!(Vector::from([1, 2, 3]) * Fraction::from(2), Vector::from([2, 4, 6]));
-    assert_eq!(
-        Vector::from([1, 2]) * Fraction::from(2) * Fraction::from((4, 10)),
-        Vector::from([Fraction::from((8, 10)), Fraction::from((16, 10))])
-    );
-}
-
-#[rstest]
-fn cross() {
-    assert_eq!(Vector::cross(&[1, 2].into(), &[3, 4].into()), [-2].into());
-    assert_eq!(Vector::cross(&[1, 2, 3].into(), &[4, 5, 6].into()), [-3, 6, -3].into());
-}
-
-#[rstest]
-#[should_panic(expected = "Error: Incompatible dimensions for cross product.")]
-fn bad_cross() {
-    Vector::cross(&[1].into(), &[2].into());
 }
 
 #[rstest]
@@ -148,6 +82,72 @@ fn is_parallel() {
     assert!(some.is_parallel(&Vector::from([3, 4])));
     assert!(some.is_parallel(&Vector::from([-3, -4])));
     assert!(some.is_parallel(&Vector::from([6, 8])));
+}
+
+#[rstest]
+fn norm() {
+    assert_eq!(Vector::from([0]).norm(), 0.0);
+    assert_eq!(Vector::from([1]).norm(), 1.0);
+    assert_eq!(Vector::from([3, 4]).norm(), 5.0);
+}
+
+#[rstest]
+fn count_leading_zeros() {
+    assert_eq!(Vector::from([0]).count_leading_zeros(), 1);
+    assert_eq!(Vector::from([0, 1]).count_leading_zeros(), 1);
+    assert_eq!(Vector::from([0, 0]).count_leading_zeros(), 2);
+    assert_eq!(Vector::from([0, 0, 1]).count_leading_zeros(), 2);
+    assert_eq!(Vector::from([0, 0, 0, 1, 2, 3]).count_leading_zeros(), 3);
+    assert_eq!(Vector::from([0, 0, 0, 1, 2, 3, 0, 0, 0]).count_leading_zeros(), 3);
+}
+
+#[rstest]
+fn cross() {
+    assert_eq!(Vector::cross(&[1, 2].into(), &[3, 4].into()), [-2].into());
+    assert_eq!(Vector::cross(&[1, 2, 3].into(), &[4, 5, 6].into()), [-3, 6, -3].into());
+}
+
+#[rstest]
+#[should_panic(expected = "Error: Incompatible dimensions for cross product.")]
+fn bad_cross() {
+    Vector::cross(&[1].into(), &[2].into());
+}
+
+#[rstest]
+fn add() {
+    assert_eq!(Vector::from([1]) + Vector::from([1]), Vector::from([2]));
+    assert_eq!(Vector::from([1, 2, 3]) + Vector::from([4, 5, 6]), Vector::from([5, 7, 9]));
+    assert_eq!(Vector::from([1, 2]) + Vector::from([1, 2]) + Vector::from([1, 2]), Vector::from([3, 6]));
+}
+
+#[rstest]
+#[should_panic(expected = "Error: The dimensions mismatch.")]
+fn bad_add() {
+    let _ = Vector::from([1]) + Vector::from([1, 2]);
+}
+
+#[rstest]
+fn sub() {
+    assert_eq!(Vector::from([1]) - Vector::from([1]), Vector::from([0]));
+    assert_eq!(Vector::from([1, 2, 3]) - Vector::from([4, 5, 6]), Vector::from([-3, -3, -3]));
+    assert_eq!(Vector::from([1, 2]) - Vector::from([1, 2]) - Vector::from([1, 2]), Vector::from([-1, -2]));
+}
+
+#[rstest]
+fn scalar_mul() {
+    assert_eq!(Fraction::from(1) * Vector::from([1]), Vector::from([1]));
+    assert_eq!(Vector::from([1]) * Fraction::from(1), Vector::from([1]));
+    assert_eq!(Vector::from([1, 2, 3]) * Fraction::from(2), Vector::from([2, 4, 6]));
+    assert_eq!(
+        Vector::from([1, 2]) * Fraction::from(2) * Fraction::from((4, 10)),
+        Vector::from([Fraction::from((8, 10)), Fraction::from((16, 10))])
+    );
+}
+
+#[rstest]
+fn dot_mul() {
+    assert_eq!(Vector::from([1]) * Vector::from([1]), 1.into());
+    assert_eq!(Vector::from([1, 2, 3]) * Vector::from([4, 5, 6]), 32.into());
 }
 
 #[rstest]

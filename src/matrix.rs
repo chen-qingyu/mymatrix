@@ -14,32 +14,32 @@ pub struct Matrix {
 
 impl Matrix {
     /// Create a new matrix object.
-    pub fn new() -> Matrix {
-        Matrix { rows: Vec::new() }
+    pub fn new() -> Self {
+        Self { rows: Vec::new() }
     }
 
     /// Create a row x col matrix with all identical elements.
-    pub fn create(row: usize, col: usize, value: Fraction) -> Matrix {
+    pub fn create(row: usize, col: usize, value: Fraction) -> Self {
         let mut rows = Vec::with_capacity(row);
         for _ in 0..row {
             rows.push(Vector::create(col, value));
         }
-        Matrix { rows }
+        Self { rows }
     }
 
     /// Create a row x col matrix with all 0 elements.
-    pub fn zeros(row: usize, col: usize) -> Matrix {
-        Matrix::create(row, col, 0.into())
+    pub fn zeros(row: usize, col: usize) -> Self {
+        Self::create(row, col, 0.into())
     }
 
     /// Create a row x col matrix with all 1 elements.
-    pub fn ones(row: usize, col: usize) -> Matrix {
-        Matrix::create(row, col, 1.into())
+    pub fn ones(row: usize, col: usize) -> Self {
+        Self::create(row, col, 1.into())
     }
 
     /// Generate an n-order identity matrix.
-    pub fn identity(n: usize) -> Matrix {
-        let mut m = Matrix::zeros(n, n);
+    pub fn identity(n: usize) -> Self {
+        let mut m = Self::zeros(n, n);
         for i in 0..n {
             m[i][i] = 1.into();
         }
@@ -65,40 +65,26 @@ impl Matrix {
         self.rows.is_empty()
     }
 
-    /// Returns an iterator over the matrix.
-    pub fn iter(&self) -> std::slice::Iter<Vector> {
-        self.rows.iter()
-    }
-
-    /// Split this matrix by rows.
-    pub fn split_row(&self, n: usize) -> (Matrix, Matrix) {
-        utility::check_bounds(n, 0, self.row_size());
-
-        let (mut first, mut second) = (Matrix::new(), Matrix::new());
-        first.rows = self.rows[0..n].to_vec();
-        second.rows = self.rows[n..].to_vec();
-
-        (first, second)
-    }
-
-    /// Split this matrix by columns.
-    pub fn split_col(&self, n: usize) -> (Matrix, Matrix) {
-        utility::check_bounds(n, 0, self.col_size());
-
-        let (mut first, mut second) = (Matrix::new(), Matrix::new());
-        first.rows.resize(self.row_size(), Default::default());
-        second.rows.resize(self.row_size(), Default::default());
-        for r in 0..self.row_size() {
-            first.rows[r].elements = self.rows[r].elements[..n].to_vec();
-            second.rows[r].elements = self.rows[r].elements[n..].to_vec();
+    /// Returns `true` if the matrix is symmetric.
+    pub fn is_symmetric(&self) -> bool {
+        if self.row_size() != self.col_size() {
+            return false;
         }
 
-        (first, second)
+        for r in 0..self.row_size() {
+            for c in 0..r {
+                if self.rows[r][c] != self.rows[c][r] {
+                    return false;
+                }
+            }
+        }
+
+        true
     }
 
     /// Returns the transpose of the matrix.
-    pub fn transpose(&self) -> Matrix {
-        let mut result = Matrix::zeros(self.col_size(), self.row_size());
+    pub fn transpose(&self) -> Self {
+        let mut result = Self::zeros(self.col_size(), self.row_size());
 
         for i in 0..self.row_size() {
             for j in 0..self.col_size() {
@@ -108,10 +94,48 @@ impl Matrix {
         result
     }
 
-    /// Calculate the rank of this matrix.
-    pub fn rank(&self) -> usize {
-        let zeros = self.rref().rows.iter().filter(|row| row.is_zero()).count();
-        self.row_size() - zeros
+    /// Return the matrix that removed the i-th row and j-th column, 0 <= i, j < n.
+    pub fn submatrix(&self, i: usize, j: usize) -> Self {
+        let mut submatrix = Vec::with_capacity(self.row_size() - 1);
+        for r in 0..self.row_size() {
+            if r != i {
+                let mut row = Vec::with_capacity(self.col_size() - 1);
+                row.extend_from_slice(&self[r].elements[..j]);
+                row.extend_from_slice(&self[r].elements[j + 1..]);
+                submatrix.push(row);
+            }
+        }
+        Self::from(submatrix)
+    }
+
+    /// Return the minor matrix.
+    pub fn minor(&self) -> Self {
+        let mut m = Self::zeros(self.row_size(), self.col_size());
+        for r in 0..m.row_size() {
+            for c in 0..m.col_size() {
+                m[r][c] = self.submatrix(r, c).det().unwrap();
+            }
+        }
+        m
+    }
+
+    /// Return the co-factor matrix.
+    pub fn cofactor(&self) -> Self {
+        let mut m = self.minor();
+        for r in 0..m.row_size() {
+            for c in 0..self.col_size() {
+                // a11 -> a00, r+c parity unchanged
+                if (r + c) & 1 == 1 {
+                    m[r][c] = -m[r][c];
+                }
+            }
+        }
+        m
+    }
+
+    /// Return the adjugate matrix.
+    pub fn adj(&self) -> Self {
+        self.cofactor().transpose()
     }
 
     /// Calculate the determinant of this matrix.
@@ -130,115 +154,17 @@ impl Matrix {
     }
 
     /// Calculate the inverse of this matrix.
-    pub fn inv(&self) -> Option<Matrix> {
+    pub fn inv(&self) -> Option<Self> {
         // check square matrix and check invertible matrix
         if self.row_size() != self.col_size() || self.rank() != self.row_size() {
             return None;
         }
 
         // generate augmented matrix [A:E] and transform [A:E] to reduced row echelon form
-        let echelon = self.clone().expand_col(Matrix::identity(self.row_size())).rref();
+        let echelon = self.clone().expand_col(Self::identity(self.row_size())).rref();
 
         // at this point, the original E is the inverse of A
         Some(echelon.split_col(self.row_size()).1)
-    }
-
-    /// Return the matrix that removed the i-th row and j-th column, 0 <= i, j < n.
-    pub fn submatrix(&self, i: usize, j: usize) -> Matrix {
-        let mut submatrix = Vec::with_capacity(self.row_size() - 1);
-        for r in 0..self.row_size() {
-            if r != i {
-                let mut row = Vec::with_capacity(self.col_size() - 1);
-                row.extend_from_slice(&self[r].elements[..j]);
-                row.extend_from_slice(&self[r].elements[j + 1..]);
-                submatrix.push(row);
-            }
-        }
-        Matrix::from(submatrix)
-    }
-
-    /// Return the minor matrix.
-    pub fn minor(&self) -> Matrix {
-        let mut m = Matrix::zeros(self.row_size(), self.col_size());
-        for r in 0..m.row_size() {
-            for c in 0..m.col_size() {
-                m[r][c] = self.submatrix(r, c).det().unwrap();
-            }
-        }
-        m
-    }
-
-    /// Return the co-factor matrix.
-    pub fn cofactor(&self) -> Matrix {
-        let mut m = self.minor();
-        for r in 0..m.row_size() {
-            for c in 0..self.col_size() {
-                // a11 -> a00, r+c parity unchanged
-                if (r + c) & 1 == 1 {
-                    m[r][c] = -m[r][c];
-                }
-            }
-        }
-        m
-    }
-
-    /// Return the adjugate matrix.
-    pub fn adj(&self) -> Matrix {
-        self.cofactor().transpose()
-    }
-
-    /// Returns `true` if the matrix is symmetric.
-    pub fn is_symmetric(&self) -> bool {
-        if self.row_size() != self.col_size() {
-            return false;
-        }
-
-        for r in 0..self.row_size() {
-            for c in 0..r {
-                if self.rows[r][c] != self.rows[c][r] {
-                    return false;
-                }
-            }
-        }
-
-        true
-    }
-
-    /// Expand this matrix by rows.
-    pub fn expand_row(&mut self, mut matrix: Matrix) -> &Self {
-        utility::check_size(self.col_size(), matrix.col_size());
-
-        self.rows.append(&mut matrix.rows);
-        self
-    }
-
-    /// Expand this matrix by columns.
-    pub fn expand_col(&mut self, mut matrix: Matrix) -> &Self {
-        utility::check_size(self.row_size(), matrix.row_size());
-
-        for i in 0..self.row_size() {
-            self.rows[i].elements.append(&mut matrix[i].elements);
-        }
-        self
-    }
-
-    /// Elementary Row Operations: Row Swap.
-    pub fn e_row_swap(&mut self, i: usize, j: usize) -> &Self {
-        self.rows.swap(i, j);
-        self
-    }
-
-    /// Elementary Row Operations: Scalar Multiplication.
-    pub fn e_scalar_multiplication(&mut self, i: usize, k: Fraction) -> &Self {
-        self.rows[i] *= k;
-        self
-    }
-
-    /// Elementary Row Operations: Row Sum.
-    pub fn e_row_sum(&mut self, i: usize, j: usize, k: Fraction) -> &Self {
-        let row = self[j].clone();
-        self.rows[i] += row * k;
-        self
     }
 
     /// Transform this matrix to reduced row echelon form.
@@ -282,13 +208,19 @@ impl Matrix {
         m
     }
 
+    /// Calculate the rank of this matrix.
+    pub fn rank(&self) -> usize {
+        let zeros = self.rref().rows.iter().filter(|row| row.is_zero()).count();
+        self.row_size() - zeros
+    }
+
     /// LU decomposition, use Doolittle algorithm.
     pub fn lu_decomposition(&self) -> (Self, Self) {
         utility::check_size(self.row_size(), self.col_size());
 
         let n = self.row_size();
-        let mut l = Matrix::identity(n);
-        let mut u = Matrix::zeros(n, n);
+        let mut l = Self::identity(n);
+        let mut u = Self::zeros(n, n);
 
         for i in 0..n {
             for j in 0..(i + 1) {
@@ -310,33 +242,96 @@ impl Matrix {
 
         (l, u)
     }
+
+    /// Split this matrix by rows.
+    pub fn split_row(&self, n: usize) -> (Self, Self) {
+        utility::check_bounds(n, 0, self.row_size());
+
+        let (mut first, mut second) = (Self::new(), Self::new());
+        first.rows = self.rows[0..n].to_vec();
+        second.rows = self.rows[n..].to_vec();
+
+        (first, second)
+    }
+
+    /// Split this matrix by columns.
+    pub fn split_col(&self, n: usize) -> (Self, Self) {
+        utility::check_bounds(n, 0, self.col_size());
+
+        let (mut first, mut second) = (Self::new(), Self::new());
+        first.rows.resize(self.row_size(), Default::default());
+        second.rows.resize(self.row_size(), Default::default());
+        for r in 0..self.row_size() {
+            first.rows[r].elements = self.rows[r].elements[..n].to_vec();
+            second.rows[r].elements = self.rows[r].elements[n..].to_vec();
+        }
+
+        (first, second)
+    }
+
+    /// Expand this matrix by rows.
+    pub fn expand_row(&mut self, mut matrix: Self) -> &Self {
+        utility::check_size(self.col_size(), matrix.col_size());
+
+        self.rows.append(&mut matrix.rows);
+        self
+    }
+
+    /// Expand this matrix by columns.
+    pub fn expand_col(&mut self, mut matrix: Self) -> &Self {
+        utility::check_size(self.row_size(), matrix.row_size());
+
+        for i in 0..self.row_size() {
+            self.rows[i].elements.append(&mut matrix[i].elements);
+        }
+        self
+    }
+
+    /// Elementary Row Operations: Row Swap.
+    pub fn e_row_swap(&mut self, i: usize, j: usize) -> &Self {
+        self.rows.swap(i, j);
+        self
+    }
+
+    /// Elementary Row Operations: Scalar Multiplication.
+    pub fn e_scalar_multiplication(&mut self, i: usize, k: Fraction) -> &Self {
+        self.rows[i] *= k;
+        self
+    }
+
+    /// Elementary Row Operations: Row Sum.
+    pub fn e_row_sum(&mut self, i: usize, j: usize, k: Fraction) -> &Self {
+        let row = self[j].clone();
+        self.rows[i] += row * k;
+        self
+    }
 }
 
 impl<const R: usize, const C: usize> From<[[Fraction; C]; R]> for Matrix {
     fn from(value: [[Fraction; C]; R]) -> Self {
         let rows = Vec::from(value.map(Vector::from));
-        Matrix { rows }
+        Self { rows }
     }
 }
 
 impl<const R: usize, const C: usize> From<[[i32; C]; R]> for Matrix {
     fn from(value: [[i32; C]; R]) -> Self {
         let rows = Vec::from(value.map(Vector::from));
-        Matrix { rows }
+        Self { rows }
     }
 }
 
 impl From<Vec<Vec<Fraction>>> for Matrix {
     fn from(value: Vec<Vec<Fraction>>) -> Self {
         let rows = value.into_iter().map(Vector::from).collect();
-        Matrix { rows }
+        Self { rows }
     }
 }
 
 impl From<Vec<Vec<i32>>> for Matrix {
     fn from(value: Vec<Vec<i32>>) -> Self {
         let rows = value.into_iter().map(Vector::from).collect();
-        Matrix { rows }
+        Self { rows }
     }
 }
 
@@ -355,7 +350,7 @@ impl IndexMut<usize> for Matrix {
 }
 
 impl Display for Matrix {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         writeln!(f, "[")?;
 
         // calc the max width of element
@@ -435,3 +430,12 @@ auto_ops::impl_op_ex!(*|a: &Matrix, b: &Matrix| -> Matrix {
     }
     result
 });
+
+impl IntoIterator for Matrix {
+    type Item = Vector;
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.rows.into_iter()
+    }
+}

@@ -51,41 +51,18 @@ fn access(mut setup: Fixture) {
 }
 
 #[rstest]
-fn rank() {
-    assert_eq!(Matrix::ones(2, 2).rank(), 1);
-    assert_eq!(Matrix::from([[1, 2, 3], [4, 5, 6]]).rank(), 2);
-    assert_eq!(Matrix::from([[1, 2], [3, 4], [5, 6]]).rank(), 2);
-    assert_eq!(Matrix::from([[1, 2, 3], [4, 5, 6], [7, 8, 9]]).rank(), 2);
-    assert_eq!(Matrix::from([[1, 2, 3], [4, 5, 6], [7, 8, 0]]).rank(), 3);
+fn is_symmetric(setup: Fixture) {
+    assert_eq!(setup.empty.is_symmetric(), true);
+    assert_eq!(setup.one.is_symmetric(), true);
+    assert_eq!(setup.some.is_symmetric(), false);
+    assert_eq!((&setup.some * &setup.some.transpose()).is_symmetric(), true);
+    assert_eq!(Matrix::from([[1, 2, 3], [4, 5, 6], [7, 8, 0]]).is_symmetric(), false);
 }
 
 #[rstest]
-fn det() {
-    assert_eq!(Matrix::from([[1, 2, 3], [4, 5, 6], [7, 8, 9]]).det(), Some(0.into()));
-    assert_eq!(Matrix::from([[1, 2, 3], [4, 5, 6], [7, 8, 0]]).det(), Some(27.into()));
-    assert_eq!(Matrix::from([[1, 2, 3], [4, 5, 6]]).det(), None);
-}
-
-#[rstest]
-fn inv() {
-    assert_eq!(
-        Matrix::from([[1, 2], [3, 4]]).inv(),
-        Some(Matrix::from([
-            [Fraction::from(-2), Fraction::from(1)],
-            [Fraction::from((3, 2)), Fraction::from((-1, 2))]
-        ]))
-    );
-
-    assert_eq!(
-        Matrix::from([[1, 2, 3], [4, 5, 6], [7, 8, 0]]).inv(),
-        Some(Matrix::from([
-            [Fraction::from((-16, 9)), Fraction::from((8, 9)), Fraction::from((-1, 9))],
-            [Fraction::from((14, 9)), Fraction::from((-7, 9)), Fraction::from((2, 9))],
-            [Fraction::from((-1, 9)), Fraction::from((2, 9)), Fraction::from((-1, 9))],
-        ]))
-    );
-
-    assert_eq!(Matrix::from([[1, 2, 3], [4, 5, 6], [7, 8, 9]]).inv(), None);
+fn transpose() {
+    assert_eq!(Matrix::create(2, 3, 1.into()).transpose(), Matrix::create(3, 2, 1.into()));
+    assert_eq!(Matrix::create(1, 3, 3.into()).transpose(), Matrix::create(3, 1, 3.into()));
 }
 
 #[rstest]
@@ -126,12 +103,88 @@ fn adj() {
 }
 
 #[rstest]
-fn is_symmetric(setup: Fixture) {
-    assert_eq!(setup.empty.is_symmetric(), true);
-    assert_eq!(setup.one.is_symmetric(), true);
-    assert_eq!(setup.some.is_symmetric(), false);
-    assert_eq!((&setup.some * &setup.some.transpose()).is_symmetric(), true);
-    assert_eq!(Matrix::from([[1, 2, 3], [4, 5, 6], [7, 8, 0]]).is_symmetric(), false);
+fn det() {
+    assert_eq!(Matrix::from([[1, 2, 3], [4, 5, 6], [7, 8, 9]]).det(), Some(0.into()));
+    assert_eq!(Matrix::from([[1, 2, 3], [4, 5, 6], [7, 8, 0]]).det(), Some(27.into()));
+    assert_eq!(Matrix::from([[1, 2, 3], [4, 5, 6]]).det(), None);
+    assert_eq!(Matrix::new().det(), Some(1.into()));
+}
+
+#[rstest]
+fn inv() {
+    assert_eq!(
+        Matrix::from([[1, 2], [3, 4]]).inv(),
+        Some(Matrix::from([
+            [Fraction::from(-2), Fraction::from(1)],
+            [Fraction::from((3, 2)), Fraction::from((-1, 2))]
+        ]))
+    );
+
+    assert_eq!(
+        Matrix::from([[1, 2, 3], [4, 5, 6], [7, 8, 0]]).inv(),
+        Some(Matrix::from([
+            [Fraction::from((-16, 9)), Fraction::from((8, 9)), Fraction::from((-1, 9))],
+            [Fraction::from((14, 9)), Fraction::from((-7, 9)), Fraction::from((2, 9))],
+            [Fraction::from((-1, 9)), Fraction::from((2, 9)), Fraction::from((-1, 9))],
+        ]))
+    );
+
+    assert_eq!(Matrix::from([[1, 2, 3], [4, 5, 6], [7, 8, 9]]).inv(), None);
+}
+
+#[rstest]
+fn rref() {
+    assert_eq!(Matrix::ones(2, 2).rref(), Matrix::from([[1, 1], [0, 0]]));
+
+    assert_eq!(Matrix::from([[1, 2, 3], [4, 5, 6]]).rref(), Matrix::from([[1, 0, -1], [0, 1, 2]]));
+    assert_eq!(Matrix::from([[1, 2], [3, 4], [5, 6]]).rref(), Matrix::from([[1, 0], [0, 1], [0, 0]]));
+
+    assert_eq!(Matrix::from([[1, 2], [3, 4], [5, 6], [7, 8]]).rref(), Matrix::from([[1, 0], [0, 1], [0, 0], [0, 0]]));
+    assert_eq!(Matrix::from([[1, 2, 3, 4], [5, 6, 7, 8]]).rref(), Matrix::from([[1, 0, -1, -2], [0, 1, 2, 3]]));
+}
+
+#[rstest]
+fn rank() {
+    assert_eq!(Matrix::ones(2, 2).rank(), 1);
+    assert_eq!(Matrix::from([[1, 2, 3], [4, 5, 6]]).rank(), 2);
+    assert_eq!(Matrix::from([[1, 2], [3, 4], [5, 6]]).rank(), 2);
+    assert_eq!(Matrix::from([[1, 2, 3], [4, 5, 6], [7, 8, 9]]).rank(), 2);
+    assert_eq!(Matrix::from([[1, 2, 3], [4, 5, 6], [7, 8, 0]]).rank(), 3);
+}
+
+#[rstest]
+fn lu_decomposition() {
+    assert_eq!(
+        Matrix::from([[2, 3, 1], [4, 7, 1], [6, 7, 3]]).lu_decomposition(),
+        (Matrix::from([[1, 0, 0], [2, 1, 0], [3, -2, 1]]), Matrix::from([[2, 3, 1], [0, 1, -1], [0, 0, -2]]))
+    );
+
+    assert_eq!(
+        Matrix::from([[2, 3, 1], [4, 0, 1], [6, 7, 3]]).lu_decomposition(),
+        (
+            Matrix::from([
+                [1.into(), 0.into(), 0.into()],
+                [2.into(), 1.into(), 0.into()],
+                [3.into(), Fraction::from((1, 3)), 1.into()]
+            ]),
+            Matrix::from([
+                [2.into(), 3.into(), 1.into()],
+                [0.into(), (-6).into(), (-1).into()],
+                [0.into(), 0.into(), Fraction::from((1, 3))]
+            ])
+        )
+    );
+}
+
+#[rstest]
+fn split() {
+    let matrix = Matrix::from([[1, 2], [3, 4], [5, 6]]);
+
+    assert_eq!(matrix.split_row(1).0, Matrix::from([[1, 2]]));
+    assert_eq!(matrix.split_row(1).1, Matrix::from([[3, 4], [5, 6]]));
+
+    assert_eq!(matrix.split_col(1).0, Matrix::from([[1], [3], [5]]));
+    assert_eq!(matrix.split_col(1).1, Matrix::from([[2], [4], [6]]));
 }
 
 #[rstest]
@@ -161,42 +214,6 @@ fn elementary_row_operations() {
     assert_eq!(matrix.e_row_swap(0, 1), &Matrix::from([[4, 5, 6], [1, 2, 3], [7, 8, 9]]));
     assert_eq!(matrix.e_scalar_multiplication(1, 2.into()), &Matrix::from([[4, 5, 6], [2, 4, 6], [7, 8, 9]]));
     assert_eq!(matrix.e_row_sum(0, 1, (-1).into()), &Matrix::from([[2, 1, 0], [2, 4, 6], [7, 8, 9]]));
-}
-
-#[rstest]
-fn rref() {
-    assert_eq!(Matrix::ones(2, 2).rref(), Matrix::from([[1, 1], [0, 0]]));
-
-    assert_eq!(Matrix::from([[1, 2, 3], [4, 5, 6]]).rref(), Matrix::from([[1, 0, -1], [0, 1, 2]]));
-    assert_eq!(Matrix::from([[1, 2], [3, 4], [5, 6]]).rref(), Matrix::from([[1, 0], [0, 1], [0, 0]]));
-
-    assert_eq!(Matrix::from([[1, 2], [3, 4], [5, 6], [7, 8]]).rref(), Matrix::from([[1, 0], [0, 1], [0, 0], [0, 0]]));
-    assert_eq!(Matrix::from([[1, 2, 3, 4], [5, 6, 7, 8]]).rref(), Matrix::from([[1, 0, -1, -2], [0, 1, 2, 3]]));
-}
-
-#[rstest]
-fn lu_decomposition() {
-    assert_eq!(
-        Matrix::from([[2, 3, 1], [4, 7, 1], [6, 7, 3]]).lu_decomposition(),
-        (Matrix::from([[1, 0, 0], [2, 1, 0], [3, -2, 1]]), Matrix::from([[2, 3, 1], [0, 1, -1], [0, 0, -2]]))
-    );
-}
-
-#[rstest]
-fn split() {
-    let matrix = Matrix::from([[1, 2], [3, 4], [5, 6]]);
-
-    assert_eq!(matrix.split_row(1).0, Matrix::from([[1, 2]]));
-    assert_eq!(matrix.split_row(1).1, Matrix::from([[3, 4], [5, 6]]));
-
-    assert_eq!(matrix.split_col(1).0, Matrix::from([[1], [3], [5]]));
-    assert_eq!(matrix.split_col(1).1, Matrix::from([[2], [4], [6]]));
-}
-
-#[rstest]
-fn transpose() {
-    assert_eq!(Matrix::create(2, 3, 1.into()).transpose(), Matrix::create(3, 2, 1.into()));
-    assert_eq!(Matrix::create(1, 3, 3.into()).transpose(), Matrix::create(3, 1, 3.into()));
 }
 
 #[rstest]

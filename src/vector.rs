@@ -14,23 +14,23 @@ pub struct Vector {
 
 impl Vector {
     /// Create a new vector object.
-    pub fn new() -> Vector {
+    pub fn new() -> Self {
         Self { elements: Vec::new() }
     }
 
     /// Create an n-dimensional vector with all identical elements.
-    pub fn create(n: usize, value: Fraction) -> Vector {
+    pub fn create(n: usize, value: Fraction) -> Self {
         Self { elements: [value].repeat(n) }
     }
 
     /// Create an n-dimensional vector with all 0 elements.
-    pub fn zeros(n: usize) -> Vector {
-        Vector::create(n, 0.into())
+    pub fn zeros(n: usize) -> Self {
+        Self::create(n, 0.into())
     }
 
     /// Create an n-dimensional vector with all 1 elements.
-    pub fn ones(n: usize) -> Vector {
-        Vector::create(n, 1.into())
+    pub fn ones(n: usize) -> Self {
+        Self::create(n, 1.into())
     }
 
     /// Returns the number of elements in the vector.
@@ -43,12 +43,28 @@ impl Vector {
         self.elements.is_empty()
     }
 
-    /// Returns an iterator over the vector.
-    pub fn iter(&self) -> std::slice::Iter<Fraction> {
-        self.elements.iter()
+    /// Determine if it is a zero vector.
+    pub fn is_zero(&self) -> bool {
+        self.count_leading_zeros() == self.size()
     }
 
-    /// Calculate the norm of the vector.
+    /// Determine whether two vectors are orthogonal.
+    pub fn is_orthogonal(&self, that: &Self) -> bool {
+        utility::check_empty(self.size());
+        utility::check_size(self.size(), that.size());
+
+        (self * that) == 0.into()
+    }
+
+    /// Determine whether two vectors are paralle.
+    pub fn is_parallel(&self, that: &Self) -> bool {
+        utility::check_empty(self.size());
+        utility::check_size(self.size(), that.size());
+
+        f64::from(self * that).abs() == self.norm() * that.norm()
+    }
+
+    /// Calculate the norm (abs) of the vector.
     pub fn norm(&self) -> f64 {
         utility::check_empty(self.size());
 
@@ -59,7 +75,7 @@ impl Vector {
         norm.sqrt()
     }
 
-    /// Calculate the number of leading zeros for this vector.
+    /// Calculate the number of leading zeros of this vector.
     pub fn count_leading_zeros(&self) -> usize {
         utility::check_empty(self.size());
 
@@ -73,33 +89,12 @@ impl Vector {
         lz
     }
 
-    /// Determine if it is a zero vector.
-    pub fn is_zero(&self) -> bool {
-        self.count_leading_zeros() == self.size()
-    }
-
-    /// Determine whether two vectors are orthogonal.
-    pub fn is_orthogonal(&self, vector: &Self) -> bool {
-        utility::check_empty(self.size());
-        utility::check_size(self.size(), vector.size());
-
-        (self * vector) == 0.into()
-    }
-
-    /// Determine whether two vectors are paralle.
-    pub fn is_parallel(&self, vector: &Self) -> bool {
-        utility::check_empty(self.size());
-        utility::check_size(self.size(), vector.size());
-
-        f64::from(self * vector).abs() == self.norm() * vector.norm()
-    }
-
     /// Return the cross product of two vectors.
     pub fn cross(a: &Self, b: &Self) -> Self {
         if a.size() == 2 && b.size() == 2 {
-            Vector::from([a[0] * b[1] - a[1] * b[0]])
+            Self::from([a[0] * b[1] - a[1] * b[0]])
         } else if a.size() == 3 && b.size() == 3 {
-            return Vector::from([a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]);
+            return Self::from([a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]);
         } else {
             panic!("Error: Incompatible dimensions for cross product.");
         }
@@ -149,7 +144,7 @@ impl IndexMut<usize> for Vector {
 }
 
 impl Display for Vector {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "[")?;
 
         // calc the max width of element
@@ -218,3 +213,12 @@ auto_ops::impl_op_ex!(*|a: &Vector, b: &Vector| -> Fraction {
     }
     result
 });
+
+impl IntoIterator for Vector {
+    type Item = Fraction;
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.elements.into_iter()
+    }
+}
