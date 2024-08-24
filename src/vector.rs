@@ -61,7 +61,17 @@ impl Vector {
         utility::check_empty(self.size());
         utility::check_size(self.size(), that.size());
 
-        f64::from(self * that).abs() == self.norm() * that.norm()
+        // zero vector parallel to any vector
+        if self.is_zero() || that.is_zero() {
+            return true;
+        }
+
+        // find the first non-zero element
+        let i = self.count_leading_zeros();
+        // calc the scale factor
+        let scale = that[i] / self[i];
+        // if equal after scale-up, then parallel
+        self * scale == *that
     }
 
     /// Calculate the norm (abs) of the vector.

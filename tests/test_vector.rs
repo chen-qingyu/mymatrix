@@ -82,6 +82,8 @@ fn is_parallel() {
     assert!(some.is_parallel(&Vector::from([3, 4])));
     assert!(some.is_parallel(&Vector::from([-3, -4])));
     assert!(some.is_parallel(&Vector::from([6, 8])));
+
+    assert!(Vector::from([1, 1]).is_parallel(&Vector::from([2, 2])));
 }
 
 #[rstest]
