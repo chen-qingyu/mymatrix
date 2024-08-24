@@ -37,8 +37,8 @@ impl Matrix {
         Matrix::create(row, col, 1.into())
     }
 
-    /// Generate an n-order unit matrix.
-    pub fn eye(n: usize) -> Matrix {
+    /// Generate an n-order identity matrix.
+    pub fn identity(n: usize) -> Matrix {
         let mut m = Matrix::zeros(n, n);
         for i in 0..n {
             m[i][i] = 1.into();
@@ -139,19 +139,10 @@ impl Matrix {
 
         let mut echelon = self.clone();
         // generate augmented matrix [A:E]
-        echelon.expand_col(Matrix::eye(self.row_size()));
-        // transforming [A:E] into a row echelon matrix
-        echelon.to_row_echelon();
-        // transform A into a diagonal matrix
-        for c in 0..echelon.row_size() {
-            for r in 0..c {
-                echelon.e_row_sum(r, c, -(echelon[r][c] / echelon[c][c]));
-            }
-        }
-        // transform A into a unit matrix
-        for r in 0..echelon.row_size() {
-            echelon.e_scalar_multiplication(r, Fraction::from(1) / echelon[r][r]);
-        }
+        echelon.expand_col(Matrix::identity(self.row_size()));
+        // transforming [A:E] into reduced row echelon form
+        echelon.to_reduced_row_echelon();
+
         // at this point, the original E is the inverse of A
         Some(echelon.split_col(self.row_size()).1)
     }
@@ -271,6 +262,23 @@ impl Matrix {
 
         // step 2: transform to the row echelon form. It's so elegant, I'm a genius haha.
         self.rows.sort_by_key(|r| r.count_leading_zeros());
+        self
+    }
+
+    /// Transform this matrix to reduced row echelon form.
+    pub fn to_reduced_row_echelon(&mut self) -> &Self {
+        self.to_row_echelon();
+
+        for c in 0..self.row_size() {
+            for r in 0..c {
+                self.e_row_sum(r, c, -(self[r][c] / self[c][c]));
+            }
+        }
+
+        for r in 0..self.row_size() {
+            self.e_scalar_multiplication(r, Fraction::from(1) / self[r][r]);
+        }
+
         self
     }
 }
