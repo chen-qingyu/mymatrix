@@ -269,14 +269,20 @@ impl Matrix {
     pub fn to_reduced_row_echelon(&mut self) -> &Self {
         self.to_row_echelon();
 
-        for c in 0..self.row_size() {
+        let n = usize::min(self.row_size(), self.col_size());
+
+        for c in 0..n {
             for r in 0..c {
-                self.e_row_sum(r, c, -(self[r][c] / self[c][c]));
+                if self[c][c] != 0.into() {
+                    self.e_row_sum(r, c, -(self[r][c] / self[c][c]));
+                }
             }
         }
 
-        for r in 0..self.row_size() {
-            self.e_scalar_multiplication(r, Fraction::from(1) / self[r][r]);
+        for r in 0..n {
+            if self[r][r] != 0.into() {
+                self.e_scalar_multiplication(r, Fraction::from(1) / self[r][r]);
+            }
         }
 
         self
