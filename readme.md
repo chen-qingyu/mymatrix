@@ -58,7 +58,7 @@ let d = Matrix::identity(2);
 ]
 */
 
-// adj(A) = det(A) * inv(A)
+// A.adj = |A| * A.inv
 let A = Matrix::from([[1, 2, 3], [4, 5, 6], [7, 8, 0]]);
 assert_eq!(A.adj(), A.det() * A.inv().unwrap());
 ```

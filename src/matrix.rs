@@ -171,7 +171,7 @@ impl Matrix {
         m
     }
 
-    /// Return the co-factor matrix.
+    /// Return the cofactor matrix.
     pub fn cofactor(&self) -> Self {
         let mut m = self.minor();
         for r in 0..m.row_size() {
@@ -194,7 +194,7 @@ impl Matrix {
     pub fn det(&self) -> Fraction {
         detail::check_square(self);
 
-        let (_l, u) = self.lu_decomposition();
+        let u = self.row_echelon_form();
         let mut determinant = Fraction::from(1);
         for i in 0..u.row_size() {
             determinant *= u[i][i];
@@ -204,20 +204,27 @@ impl Matrix {
 
     /// Calculate the inverse of this matrix.
     pub fn inv(&self) -> Option<Self> {
-        // check square matrix and check invertible matrix
-        if self.row_size() != self.col_size() || self.rank() != self.row_size() {
+        detail::check_square(self);
+
+        // check empty
+        if self.is_empty() {
+            return Some(Matrix::new());
+        }
+
+        // check invertible
+        if self.rank() != self.row_size() {
             return None;
         }
 
         // generate augmented matrix [A:E] and transform [A:E] to reduced row echelon form
-        let echelon = self.clone().expand_col(Self::identity(self.row_size())).rref();
+        let echelon = self.clone().expand_col(Self::identity(self.row_size())).row_canonical_form();
 
         // at this point, the original E is the inverse of A
         Some(echelon.split_col(self.row_size()).1)
     }
 
-    /// Transform this matrix to reduced row echelon form.
-    pub fn rref(&self) -> Self {
+    /// Transform this matrix to general row echelon form.
+    pub fn row_echelon_form(&self) -> Self {
         let mut m = self.clone();
 
         // step 1: Gaussian elimination
@@ -235,6 +242,13 @@ impl Matrix {
 
         // step 2: transform to the row echelon form. It's so elegant, I'm a genius haha.
         m.rows.sort_by_key(|r| r.count_leading_zeros());
+
+        m
+    }
+
+    /// Transform this matrix to reduced row echelon form.
+    pub fn row_canonical_form(&self) -> Self {
+        let mut m = self.row_echelon_form();
 
         let n = usize::min(m.row_size(), m.col_size());
 
@@ -259,7 +273,7 @@ impl Matrix {
 
     /// Calculate the rank of this matrix.
     pub fn rank(&self) -> usize {
-        let zeros = self.rref().rows.iter().filter(|row| row.is_zero()).count();
+        let zeros = self.row_echelon_form().rows.iter().filter(|row| row.is_zero()).count();
         self.row_size() - zeros
     }
 
