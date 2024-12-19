@@ -97,7 +97,7 @@ impl Matrix {
             }
         }
 
-        return true;
+        true
     }
 
     /// Check if the matrix is lower triangular matrix.
@@ -114,12 +114,12 @@ impl Matrix {
             }
         }
 
-        return true;
+        true
     }
 
     /// Check if the matrix is diagonal matrix.
     pub fn is_diagonal(&self) -> bool {
-        return self.is_lower() && self.is_upper();
+        self.is_lower() && self.is_upper()
     }
 
     /// Calculate the trace of the matrix.
