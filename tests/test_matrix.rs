@@ -109,6 +109,37 @@ fn transpose(setup: Fixture) {
 }
 
 #[rstest]
+fn row_echelon_form(setup: Fixture) {
+    assert_eq!(setup.mat_0x0.row_echelon_form(), Matrix::new());
+    assert_eq!(setup.mat_1x1.row_echelon_form(), Matrix::from([[2]]));
+    assert_eq!(setup.mat_3x3.row_echelon_form(), Matrix::from([[1, 2, 3], [0, -3, -6], [0, 0, 0]]));
+
+    assert_eq!(Matrix::ones(2, 2).row_echelon_form(), Matrix::from([[1, 1], [0, 0]]));
+    assert_eq!(Matrix::from([[1, 2, 3], [4, 5, 6]]).row_echelon_form(), Matrix::from([[1, 2, 3], [0, -3, -6]]));
+    assert_eq!(Matrix::from([[1, 2], [3, 4], [5, 6]]).row_echelon_form(), Matrix::from([[1, 2], [0, -2], [0, 0]]));
+}
+
+#[rstest]
+fn row_canonical_form(setup: Fixture) {
+    assert_eq!(setup.mat_0x0.row_canonical_form(), Matrix::new());
+    assert_eq!(setup.mat_1x1.row_canonical_form(), Matrix::from([[1]]));
+    assert_eq!(setup.mat_3x3.row_canonical_form(), Matrix::from([[1, 0, -1], [0, 1, 2], [0, 0, 0]]));
+
+    assert_eq!(Matrix::ones(2, 2).row_canonical_form(), Matrix::from([[1, 1], [0, 0]]));
+    assert_eq!(Matrix::from([[1, 2, 3], [4, 5, 6]]).row_canonical_form(), Matrix::from([[1, 0, -1], [0, 1, 2]]));
+    assert_eq!(Matrix::from([[1, 2], [3, 4], [5, 6]]).row_canonical_form(), Matrix::from([[1, 0], [0, 1], [0, 0]]));
+}
+
+#[rstest]
+fn det(setup: Fixture) {
+    assert_eq!(setup.mat_0x0.det(), 1.into());
+    assert_eq!(setup.mat_1x1.det(), 2.into());
+    assert_eq!(setup.mat_3x3.det(), 0.into());
+
+    assert_eq!(Matrix::from([[1, 2, 3], [4, 5, 6], [7, 8, 0]]).det(), 27.into());
+}
+
+#[rstest]
 fn submatrix(setup: Fixture) {
     assert_eq!(setup.mat_3x3.submatrix(0, 0), Matrix::from([[5, 6], [8, 9]]));
     assert_eq!(setup.mat_3x3.submatrix(1, 1), Matrix::from([[1, 3], [7, 9]]));
@@ -148,15 +179,6 @@ fn adj(setup: Fixture) {
 }
 
 #[rstest]
-fn det(setup: Fixture) {
-    assert_eq!(setup.mat_0x0.det(), 1.into());
-    assert_eq!(setup.mat_1x1.det(), 2.into());
-    assert_eq!(setup.mat_3x3.det(), 0.into());
-
-    assert_eq!(Matrix::from([[1, 2, 3], [4, 5, 6], [7, 8, 0]]).det(), 27.into());
-}
-
-#[rstest]
 fn inv(setup: Fixture) {
     assert_eq!(setup.mat_0x0.inv(), Some(Matrix::new()));
     assert_eq!(setup.mat_1x1.inv(), Some(Matrix::from([[Fraction::from((1, 2))]])));
@@ -170,17 +192,6 @@ fn inv(setup: Fixture) {
             [Fraction::from((-1, 9)), Fraction::from((2, 9)), Fraction::from((-1, 9))],
         ]))
     );
-}
-
-#[rstest]
-fn row_canonical_form(setup: Fixture) {
-    assert_eq!(setup.mat_0x0.row_canonical_form(), Matrix::new());
-    assert_eq!(setup.mat_1x1.row_canonical_form(), Matrix::from([[1]]));
-    assert_eq!(setup.mat_3x3.row_canonical_form(), Matrix::from([[1, 0, -1], [0, 1, 2], [0, 0, 0]]));
-
-    assert_eq!(Matrix::ones(2, 2).row_canonical_form(), Matrix::from([[1, 1], [0, 0]]));
-    assert_eq!(Matrix::from([[1, 2, 3], [4, 5, 6]]).row_canonical_form(), Matrix::from([[1, 0, -1], [0, 1, 2]]));
-    assert_eq!(Matrix::from([[1, 2], [3, 4], [5, 6]]).row_canonical_form(), Matrix::from([[1, 0], [0, 1], [0, 0]]));
 }
 
 #[rstest]

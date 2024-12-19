@@ -146,83 +146,6 @@ impl Matrix {
         result
     }
 
-    /// Return the matrix that removed the i-th row and j-th column, 0 <= i, j < n.
-    pub fn submatrix(&self, i: usize, j: usize) -> Self {
-        let mut submatrix = Vec::with_capacity(self.row_size() - 1);
-        for r in 0..self.row_size() {
-            if r != i {
-                let mut row = Vec::with_capacity(self.col_size() - 1);
-                row.extend_from_slice(&self[r].elements[..j]);
-                row.extend_from_slice(&self[r].elements[j + 1..]);
-                submatrix.push(row);
-            }
-        }
-        Self::from(submatrix)
-    }
-
-    /// Return the minor matrix.
-    pub fn minor(&self) -> Self {
-        let mut m = Self::zeros(self.row_size(), self.col_size());
-        for r in 0..m.row_size() {
-            for c in 0..m.col_size() {
-                m[r][c] = self.submatrix(r, c).det();
-            }
-        }
-        m
-    }
-
-    /// Return the cofactor matrix.
-    pub fn cofactor(&self) -> Self {
-        let mut m = self.minor();
-        for r in 0..m.row_size() {
-            for c in 0..self.col_size() {
-                // a11 -> a00, r+c parity unchanged
-                if (r + c) & 1 == 1 {
-                    m[r][c] = -m[r][c];
-                }
-            }
-        }
-        m
-    }
-
-    /// Return the adjugate matrix.
-    pub fn adj(&self) -> Self {
-        self.cofactor().transpose()
-    }
-
-    /// Calculate the determinant of this matrix.
-    pub fn det(&self) -> Fraction {
-        detail::check_square(self);
-
-        let u = self.row_echelon_form();
-        let mut determinant = Fraction::from(1);
-        for i in 0..u.row_size() {
-            determinant *= u[i][i];
-        }
-        determinant
-    }
-
-    /// Calculate the inverse of this matrix.
-    pub fn inv(&self) -> Option<Self> {
-        detail::check_square(self);
-
-        // check empty
-        if self.is_empty() {
-            return Some(Matrix::new());
-        }
-
-        // check invertible
-        if self.rank() != self.row_size() {
-            return None;
-        }
-
-        // generate augmented matrix [A:E] and transform [A:E] to reduced row echelon form
-        let echelon = self.clone().expand_col(Self::identity(self.row_size())).row_canonical_form();
-
-        // at this point, the original E is the inverse of A
-        Some(echelon.split_col(self.row_size()).1)
-    }
-
     /// Transform this matrix to general row echelon form.
     pub fn row_echelon_form(&self) -> Self {
         let mut m = self.clone();
@@ -269,6 +192,83 @@ impl Matrix {
         }
 
         m
+    }
+
+    /// Calculate the determinant of this matrix.
+    pub fn det(&self) -> Fraction {
+        detail::check_square(self);
+
+        let u = self.row_echelon_form();
+        let mut determinant = Fraction::from(1);
+        for i in 0..u.row_size() {
+            determinant *= u[i][i];
+        }
+        determinant
+    }
+
+    /// Return the matrix that removed the i-th row and j-th column, 0 <= i, j < n.
+    pub fn submatrix(&self, i: usize, j: usize) -> Self {
+        let mut submatrix = Vec::with_capacity(self.row_size() - 1);
+        for r in 0..self.row_size() {
+            if r != i {
+                let mut row = Vec::with_capacity(self.col_size() - 1);
+                row.extend_from_slice(&self[r].elements[..j]);
+                row.extend_from_slice(&self[r].elements[j + 1..]);
+                submatrix.push(row);
+            }
+        }
+        Self::from(submatrix)
+    }
+
+    /// Return the minor matrix.
+    pub fn minor(&self) -> Self {
+        let mut m = Self::zeros(self.row_size(), self.col_size());
+        for r in 0..m.row_size() {
+            for c in 0..m.col_size() {
+                m[r][c] = self.submatrix(r, c).det();
+            }
+        }
+        m
+    }
+
+    /// Return the cofactor matrix.
+    pub fn cofactor(&self) -> Self {
+        let mut m = self.minor();
+        for r in 0..m.row_size() {
+            for c in 0..self.col_size() {
+                // a11 -> a00, r+c parity unchanged
+                if (r + c) & 1 == 1 {
+                    m[r][c] = -m[r][c];
+                }
+            }
+        }
+        m
+    }
+
+    /// Return the adjugate matrix.
+    pub fn adj(&self) -> Self {
+        self.cofactor().transpose()
+    }
+
+    /// Calculate the inverse of this matrix.
+    pub fn inv(&self) -> Option<Self> {
+        detail::check_square(self);
+
+        // check empty
+        if self.is_empty() {
+            return Some(Matrix::new());
+        }
+
+        // check invertible
+        if self.rank() != self.row_size() {
+            return None;
+        }
+
+        // generate augmented matrix [A:E] and transform [A:E] to reduced row echelon form
+        let echelon = self.clone().expand_col(Self::identity(self.row_size())).row_canonical_form();
+
+        // at this point, the original E is the inverse of A
+        Some(echelon.split_col(self.row_size()).1)
     }
 
     /// Calculate the rank of this matrix.
