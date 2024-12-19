@@ -207,26 +207,15 @@ fn rank(setup: Fixture) {
 }
 
 #[rstest]
-fn lu_decomposition() {
+fn lu_decomposition(setup: Fixture) {
     assert_eq!(
         Matrix::from([[2, 3, 1], [4, 7, 1], [6, 7, 3]]).lu_decomposition(),
         (Matrix::from([[1, 0, 0], [2, 1, 0], [3, -2, 1]]), Matrix::from([[2, 3, 1], [0, 1, -1], [0, 0, -2]]))
     );
 
     assert_eq!(
-        Matrix::from([[2, 3, 1], [4, 0, 1], [6, 7, 3]]).lu_decomposition(),
-        (
-            Matrix::from([
-                [1.into(), 0.into(), 0.into()],
-                [2.into(), 1.into(), 0.into()],
-                [3.into(), Fraction::from((1, 3)), 1.into()]
-            ]),
-            Matrix::from([
-                [2.into(), 3.into(), 1.into()],
-                [0.into(), (-6).into(), (-1).into()],
-                [0.into(), 0.into(), Fraction::from((1, 3))]
-            ])
-        )
+        setup.mat_3x3.lu_decomposition(),
+        (Matrix::from([[1, 0, 0], [4, 1, 0], [7, 2, 1]]), Matrix::from([[1, 2, 3], [0, -3, -6], [0, 0, 0]]))
     );
 }
 
