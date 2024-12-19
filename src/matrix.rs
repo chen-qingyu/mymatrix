@@ -3,7 +3,7 @@ use std::{
     ops::{Index, IndexMut},
 };
 
-use crate::{utility, Vector};
+use crate::{detail, Vector};
 
 use pyinrs::Fraction;
 
@@ -124,7 +124,7 @@ impl Matrix {
 
     /// Calculate the trace of the matrix.
     pub fn trace(&self) -> Fraction {
-        utility::check_square(self);
+        detail::check_square(self);
 
         let mut tr = Fraction::new();
         for i in 0..self.row_size() {
@@ -268,7 +268,7 @@ impl Matrix {
 
     /// LU decomposition, use Doolittle algorithm.
     pub fn lu_decomposition(&self) -> (Self, Self) {
-        utility::check_square(self);
+        detail::check_square(self);
 
         let n = self.row_size();
 
@@ -304,7 +304,7 @@ impl Matrix {
 
     /// Split this matrix by rows.
     pub fn split_row(&self, n: usize) -> (Self, Self) {
-        utility::check_bounds(n, 0, self.row_size());
+        detail::check_bounds(n, 0, self.row_size());
 
         let (mut first, mut second) = (Self::new(), Self::new());
         first.rows = self.rows[0..n].to_vec();
@@ -315,7 +315,7 @@ impl Matrix {
 
     /// Split this matrix by columns.
     pub fn split_col(&self, n: usize) -> (Self, Self) {
-        utility::check_bounds(n, 0, self.col_size());
+        detail::check_bounds(n, 0, self.col_size());
 
         let (mut first, mut second) = (Self::new(), Self::new());
         first.rows.resize(self.row_size(), Default::default());
@@ -330,7 +330,7 @@ impl Matrix {
 
     /// Expand this matrix by rows.
     pub fn expand_row(&mut self, mut matrix: Self) -> &Self {
-        utility::check_size(self.col_size(), matrix.col_size());
+        detail::check_size(self.col_size(), matrix.col_size());
 
         self.rows.append(&mut matrix.rows);
         self
@@ -338,7 +338,7 @@ impl Matrix {
 
     /// Expand this matrix by columns.
     pub fn expand_col(&mut self, mut matrix: Self) -> &Self {
-        utility::check_size(self.row_size(), matrix.row_size());
+        detail::check_size(self.row_size(), matrix.row_size());
 
         for i in 0..self.row_size() {
             self.rows[i].elements.append(&mut matrix[i].elements);
@@ -436,8 +436,8 @@ impl Display for Matrix {
 }
 
 auto_ops::impl_op_ex!(+=|a: &mut Matrix, b: &Matrix| {
-    utility::check_size(a.row_size(), b.row_size());
-    utility::check_size(a.col_size(), b.col_size());
+    detail::check_size(a.row_size(), b.row_size());
+    detail::check_size(a.col_size(), b.col_size());
 
     for r in 0..a.row_size() {
         a[r] += &b[r];
@@ -451,8 +451,8 @@ auto_ops::impl_op_ex!(+|a: &Matrix, b: &Matrix| -> Matrix {
 });
 
 auto_ops::impl_op_ex!(-=|a: &mut Matrix, b: &Matrix| {
-    utility::check_size(a.row_size(), b.row_size());
-    utility::check_size(a.col_size(), b.col_size());
+    detail::check_size(a.row_size(), b.row_size());
+    detail::check_size(a.col_size(), b.col_size());
 
     for r in 0..a.row_size() {
         a[r] -= &b[r];
@@ -490,7 +490,7 @@ auto_ops::impl_op_ex_commutative!(*|a: Matrix, b: i32| -> Matrix {
 });
 
 auto_ops::impl_op_ex!(*|a: &Matrix, b: &Matrix| -> Matrix {
-    utility::check_size(a.col_size(), b.row_size());
+    detail::check_size(a.col_size(), b.row_size());
 
     let mut result = Matrix::zeros(a.row_size(), b.col_size());
     let rt = b.transpose();

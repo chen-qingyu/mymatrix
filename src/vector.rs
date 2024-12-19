@@ -3,7 +3,7 @@ use std::{
     ops::{Index, IndexMut},
 };
 
-use crate::utility;
+use crate::detail;
 
 use pyinrs::Fraction;
 
@@ -51,16 +51,16 @@ impl Vector {
 
     /// Determine whether two vectors are orthogonal.
     pub fn is_orthogonal(&self, that: &Self) -> bool {
-        utility::check_empty(self.size());
-        utility::check_size(self.size(), that.size());
+        detail::check_empty(self.size());
+        detail::check_size(self.size(), that.size());
 
         (self * that) == 0.into()
     }
 
     /// Determine whether two vectors are paralle.
     pub fn is_parallel(&self, that: &Self) -> bool {
-        utility::check_empty(self.size());
-        utility::check_size(self.size(), that.size());
+        detail::check_empty(self.size());
+        detail::check_size(self.size(), that.size());
 
         // zero vector parallel to any vector
         if self.is_zero() || that.is_zero() {
@@ -77,7 +77,7 @@ impl Vector {
 
     /// Calculate the norm (abs) of the vector.
     pub fn norm(&self) -> f64 {
-        utility::check_empty(self.size());
+        detail::check_empty(self.size());
 
         let mut norm = 0.0;
         for i in 0..self.size() {
@@ -88,7 +88,7 @@ impl Vector {
 
     /// Calculate the number of leading zeros of this vector.
     pub fn count_leading_zeros(&self) -> usize {
-        utility::check_empty(self.size());
+        detail::check_empty(self.size());
 
         let mut lz: usize = 0;
         while self.elements[lz] == 0.into() {
@@ -177,7 +177,7 @@ impl Display for Vector {
 }
 
 auto_ops::impl_op_ex!(+=|a: &mut Vector, b: &Vector| {
-    utility::check_size(a.size(), b.size());
+    detail::check_size(a.size(), b.size());
     for i in 0..a.size() {
         a[i] += b[i];
     };
@@ -190,7 +190,7 @@ auto_ops::impl_op_ex!(+|a: &Vector, b: &Vector| -> Vector {
 });
 
 auto_ops::impl_op_ex!(-=|a: &mut Vector, b: &Vector| {
-    utility::check_size(a.size(), b.size());
+    detail::check_size(a.size(), b.size());
     for i in 0..a.size() {
         a[i] -= b[i];
     };
@@ -227,8 +227,8 @@ auto_ops::impl_op_ex_commutative!(*|a: &Vector, b: i32| -> Vector {
 });
 
 auto_ops::impl_op_ex!(*|a: &Vector, b: &Vector| -> Fraction {
-    utility::check_empty(a.size());
-    utility::check_size(a.size(), b.size());
+    detail::check_empty(a.size());
+    detail::check_size(a.size(), b.size());
 
     let mut result = Fraction::new();
     for i in 0..a.size() {
