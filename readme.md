@@ -58,7 +58,7 @@ let d = Matrix::identity(2);
 ]
 */
 
-// inv(A) = (1/det(A)) * adj(A)
+// adj(A) = det(A) * inv(A)
 let A = Matrix::from([[1, 2, 3], [4, 5, 6], [7, 8, 0]]);
-assert_eq!(A.inv().unwrap(), (Fraction::from(1) / A.det().unwrap()) * A.adj());
+assert_eq!(A.adj(), A.det().unwrap() * A.inv().unwrap());
 ```
