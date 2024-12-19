@@ -150,7 +150,7 @@ impl Matrix {
     pub fn row_echelon_form(&self) -> Self {
         let mut m = self.clone();
 
-        // step 1: Gaussian elimination
+        // Gaussian elimination
         for i in 0..m.row_size() {
             let mut j: usize = 0;
             while j < m.col_size() && m.rows[i][j] == 0.into() {
@@ -158,12 +158,12 @@ impl Matrix {
             }
             for k in i + 1..m.row_size() {
                 if j < m.col_size() && m.rows[i][j] != 0.into() {
-                    m.e_row_sum(k, i, -(m.rows[k][j] / m.rows[i][j]));
+                    m.e_row_sum(k, i, -m.rows[k][j] / m.rows[i][j]);
                 }
             }
         }
 
-        // step 2: transform to the row echelon form. It's so elegant, I'm a genius haha.
+        // transform to the row echelon form. It's so elegant, I'm a genius haha.
         m.rows.sort_by_key(|r| r.count_leading_zeros());
 
         m
@@ -175,7 +175,7 @@ impl Matrix {
 
         let n = usize::min(m.row_size(), m.col_size());
 
-        // step 3: eliminate elements above the pivot
+        // eliminate elements above the pivot
         for c in 0..n {
             for r in 0..c {
                 if m[c][c] != 0.into() {
@@ -184,7 +184,7 @@ impl Matrix {
             }
         }
 
-        // step 4: make pivot equals 1
+        // make pivot equals 1
         for r in 0..n {
             if m[r][r] != 0.into() {
                 m.e_scalar_multiplication(r, Fraction::from(1) / m[r][r]);
@@ -198,12 +198,30 @@ impl Matrix {
     pub fn det(&self) -> Fraction {
         detail::check_square(self);
 
-        let u = self.row_echelon_form();
-        let mut determinant = Fraction::from(1);
-        for i in 0..u.row_size() {
-            determinant *= u[i][i];
+        let n = self.row_size();
+        let mut a = self.clone();
+
+        let mut det = Fraction::from(1);
+        for i in 0..n {
+            let mut pivot = i;
+            for j in i + 1..n {
+                if a[j][i].abs() > a[pivot][i].abs() {
+                    pivot = j;
+                }
+            }
+            if pivot != i {
+                a.e_row_swap(i, pivot);
+                det = -det;
+            }
+            if a[i][i] == 0.into() {
+                return Fraction::new();
+            }
+            det *= a[i][i];
+            for j in i + 1..n {
+                a.e_row_sum(j, i, -a[j][i] / a[i][i]);
+            }
         }
-        determinant
+        det
     }
 
     /// Return the matrix that removed the i-th row and j-th column, 0 <= i, j < n.
@@ -357,19 +375,19 @@ impl Matrix {
         self
     }
 
-    /// Elementary Row Operations: Row Swap.
+    /// Elementary Row Operations: Row Swap. (A[i] <=> A[j])
     pub fn e_row_swap(&mut self, i: usize, j: usize) -> &Self {
         self.rows.swap(i, j);
         self
     }
 
-    /// Elementary Row Operations: Scalar Multiplication.
+    /// Elementary Row Operations: Scalar Multiplication. (A[i] *= k)
     pub fn e_scalar_multiplication(&mut self, i: usize, k: Fraction) -> &Self {
         self.rows[i] *= k;
         self
     }
 
-    /// Elementary Row Operations: Row Sum.
+    /// Elementary Row Operations: Row Sum. (A[i] += A[j] * k)
     pub fn e_row_sum(&mut self, i: usize, j: usize, k: Fraction) -> &Self {
         let row = self[j].clone();
         self.rows[i] += row * k;
