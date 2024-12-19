@@ -28,6 +28,6 @@ pub fn check_size(s1: usize, s2: usize) {
 #[inline]
 pub fn check_square(m: &Matrix) {
     if m.row_size() != m.col_size() {
-        panic!("Error: This function applies only to square matrices.");
+        panic!("Error: The matrix is not a square matrix.");
     }
 }

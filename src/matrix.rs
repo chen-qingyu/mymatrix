@@ -185,10 +185,10 @@ impl Matrix {
         }
 
         // make pivot equals 1
-        for r in 0..n {
-            if m[r][r] != 0.into() {
-                m.e_scalar_multiplication(r, Fraction::from(1) / m[r][r]);
-            }
+        let mut i = 0;
+        while i < n && m[i][i] != 0.into() {
+            m.e_scalar_multiplication(i, Fraction::from(1) / m[i][i]);
+            i += 1;
         }
 
         m
@@ -272,21 +272,21 @@ impl Matrix {
     pub fn inv(&self) -> Option<Self> {
         detail::check_square(self);
 
-        // check empty
+        // inverse of empty matrix is empty matrix
         if self.is_empty() {
             return Some(Matrix::new());
         }
 
-        // check invertible
-        if self.rank() != self.row_size() {
-            return None;
+        // generate augmented matrix [A:E] and transform [A:E] to reduced row echelon form and split
+        let n = self.row_size();
+        let rref = self.clone().expand_col(Self::identity(n)).row_canonical_form().split_col(n);
+
+        // now, the original E is the inverse of A if rank = n
+        if !rref.0[n - 1].is_zero() {
+            Some(rref.1)
+        } else {
+            None
         }
-
-        // generate augmented matrix [A:E] and transform [A:E] to reduced row echelon form
-        let echelon = self.clone().expand_col(Self::identity(self.row_size())).row_canonical_form();
-
-        // at this point, the original E is the inverse of A
-        Some(echelon.split_col(self.row_size()).1)
     }
 
     /// Calculate the rank of this matrix.
