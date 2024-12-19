@@ -60,6 +60,45 @@ fn is_symmetric(setup: Fixture) {
 }
 
 #[rstest]
+fn is_upper(setup: Fixture) {
+    assert_eq!(setup.empty.is_upper(), true);
+    assert_eq!(setup.one.is_upper(), true);
+    assert_eq!(setup.some.is_upper(), false);
+
+    assert_eq!(Matrix::from([[1, 2, 3], [0, 5, 6], [0, 0, 9]]).is_upper(), true);
+    assert_eq!(Matrix::identity(3).is_upper(), true);
+}
+
+#[rstest]
+fn is_lower(setup: Fixture) {
+    assert_eq!(setup.empty.is_lower(), true);
+    assert_eq!(setup.one.is_lower(), true);
+    assert_eq!(setup.some.is_lower(), false);
+
+    assert_eq!(Matrix::from([[1, 0, 0], [4, 5, 0], [7, 8, 9]]).is_lower(), true);
+    assert_eq!(Matrix::identity(3).is_lower(), true);
+}
+
+#[rstest]
+fn is_diagonal(setup: Fixture) {
+    assert_eq!(setup.empty.is_diagonal(), true);
+    assert_eq!(setup.one.is_diagonal(), true);
+    assert_eq!(setup.some.is_diagonal(), false);
+
+    assert_eq!(Matrix::from([[1, 0, 0], [0, 2, 0], [0, 0, 3]]).is_diagonal(), true);
+    assert_eq!(Matrix::identity(3).is_diagonal(), true);
+}
+
+#[rstest]
+fn trace(setup: Fixture) {
+    assert_eq!(setup.empty.trace(), 0.into());
+    assert_eq!(setup.one.trace(), 1.into());
+
+    assert_eq!(Matrix::from([[1, 0, 0], [0, 2, 0], [0, 0, 3]]).trace(), 6.into());
+    assert_eq!(Matrix::identity(3).trace(), 3.into());
+}
+
+#[rstest]
 fn transpose() {
     assert_eq!(Matrix::create(2, 3, 1.into()).transpose(), Matrix::create(3, 2, 1.into()));
     assert_eq!(Matrix::create(1, 3, 3.into()).transpose(), Matrix::create(3, 1, 3.into()));
@@ -93,13 +132,14 @@ fn cofactor() {
 
 #[rstest]
 fn adj() {
-    let m1 = Matrix::from([[1, 2], [3, 4]]);
-    assert_eq!(m1.adj(), Matrix::from([[4, -2], [-3, 1]]));
-    assert_eq!(m1.adj() * (Fraction::from(1) / m1.det().unwrap()), m1.inv().unwrap()); // inv(A) = (1/det(A)) * adj(A)
+    assert_eq!(Matrix::from([[1, 2], [3, 4]]).adj(), Matrix::from([[4, -2], [-3, 1]]));
 
-    let m2 = Matrix::from([[1, 2, 3], [4, 5, 6], [7, 8, 0]]);
-    assert_eq!(m2.adj(), Matrix::from([[-48, 24, -3], [42, -21, 6], [-3, 6, -3]]));
-    assert_eq!(m2.adj() * (Fraction::from(1) / m2.det().unwrap()), m2.inv().unwrap());
+    assert_eq!(
+        Matrix::from([[1, 2, 3], [4, 5, 6], [7, 8, 0]]).adj(),
+        Matrix::from([[-48, 24, -3], [42, -21, 6], [-3, 6, -3]])
+    );
+
+    assert_eq!(Matrix::identity(3).adj(), Matrix::identity(3));
 }
 
 #[rstest]

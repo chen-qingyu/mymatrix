@@ -1,3 +1,5 @@
+use crate::Matrix;
+
 // Check whether the index is valid (begin <= pos < end).
 #[inline]
 pub fn check_bounds(pos: usize, begin: usize, end: usize) {
@@ -19,5 +21,13 @@ pub fn check_empty(size: usize) {
 pub fn check_size(s1: usize, s2: usize) {
     if s1 != s2 {
         panic!("Error: The dimensions mismatch.");
+    }
+}
+
+// Check if the matrix is a square matrix.
+#[inline]
+pub fn check_square(m: &Matrix) {
+    if m.row_size() != m.col_size() {
+        panic!("Error: This function applies only to square matrices.");
     }
 }

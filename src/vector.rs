@@ -214,6 +214,18 @@ auto_ops::impl_op_ex_commutative!(*|a: &Vector, b: Fraction| -> Vector {
     a
 });
 
+auto_ops::impl_op_ex!(*=|a: &mut Vector, b: i32| {
+    for i in 0..a.size() {
+        a[i] *= Fraction::from(b);
+    }
+});
+
+auto_ops::impl_op_ex_commutative!(*|a: &Vector, b: i32| -> Vector {
+    let mut a = a.clone();
+    a *= b;
+    a
+});
+
 auto_ops::impl_op_ex!(*|a: &Vector, b: &Vector| -> Fraction {
     utility::check_empty(a.size());
     utility::check_size(a.size(), b.size());

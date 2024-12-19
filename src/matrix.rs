@@ -83,6 +83,57 @@ impl Matrix {
         true
     }
 
+    /// Check if the matrix is upper triangular matrix.
+    pub fn is_upper(&self) -> bool {
+        if self.row_size() != self.col_size() {
+            return false;
+        }
+
+        for r in 1..self.row_size() {
+            for c in 0..r {
+                if self[r][c] != 0.into() {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /// Check if the matrix is lower triangular matrix.
+    pub fn is_lower(&self) -> bool {
+        if self.row_size() != self.col_size() {
+            return false;
+        }
+
+        for c in 1..self.col_size() {
+            for r in 0..c {
+                if self[r][c] != 0.into() {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /// Check if the matrix is diagonal matrix.
+    pub fn is_diagonal(&self) -> bool {
+        return self.is_lower() && self.is_upper();
+    }
+
+    /// Calculate the trace of the matrix.
+    pub fn trace(&self) -> Fraction {
+        utility::check_square(self);
+
+        let mut tr = Fraction::new();
+        for i in 0..self.row_size() {
+            tr += self[i][i];
+        }
+
+        tr
+    }
+
     /// Returns the transpose of the matrix.
     pub fn transpose(&self) -> Self {
         let mut result = Self::zeros(self.col_size(), self.row_size());
@@ -217,9 +268,16 @@ impl Matrix {
 
     /// LU decomposition, use Doolittle algorithm.
     pub fn lu_decomposition(&self) -> (Self, Self) {
-        utility::check_size(self.row_size(), self.col_size());
+        utility::check_square(self);
 
         let n = self.row_size();
+
+        if self.is_upper() {
+            return (Matrix::zeros(n, n), self.clone());
+        } else if self.is_lower() {
+            return (self.clone(), Matrix::zeros(n, n));
+        }
+
         let mut l = Self::identity(n);
         let mut u = Self::zeros(n, n);
 
@@ -414,6 +472,18 @@ auto_ops::impl_op_ex!(*=|a: &mut Matrix, b: Fraction| {
 });
 
 auto_ops::impl_op_ex_commutative!(*|a: Matrix, b: Fraction| -> Matrix {
+    let mut a = a;
+    a *= b;
+    a
+});
+
+auto_ops::impl_op_ex!(*=|a: &mut Matrix, b: i32| {
+    for r in 0..a.row_size() {
+        a.rows[r] *= b;
+    }
+});
+
+auto_ops::impl_op_ex_commutative!(*|a: Matrix, b: i32| -> Matrix {
     let mut a = a;
     a *= b;
     a
