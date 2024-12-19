@@ -165,7 +165,7 @@ impl Matrix {
         let mut m = Self::zeros(self.row_size(), self.col_size());
         for r in 0..m.row_size() {
             for c in 0..m.col_size() {
-                m[r][c] = self.submatrix(r, c).det().unwrap();
+                m[r][c] = self.submatrix(r, c).det();
             }
         }
         m
@@ -191,18 +191,15 @@ impl Matrix {
     }
 
     /// Calculate the determinant of this matrix.
-    pub fn det(&self) -> Option<Fraction> {
-        // check square matrix
-        if self.row_size() != self.col_size() {
-            return None;
-        }
+    pub fn det(&self) -> Fraction {
+        detail::check_square(self);
 
         let (_l, u) = self.lu_decomposition();
         let mut determinant = Fraction::from(1);
         for i in 0..u.row_size() {
             determinant *= u[i][i];
         }
-        Some(determinant)
+        determinant
     }
 
     /// Calculate the inverse of this matrix.
