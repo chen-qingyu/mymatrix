@@ -1,6 +1,6 @@
 [package]
 name = "mymatrix"
-version = "0.7.0"
+version = "0.8.0"
 edition = "2021"
 license = "MIT"
 authors = ["Chen QingYu <chen_qingyu@qq.com>"]
@@ -10,8 +10,8 @@ repository = "https://github.com/chen-qingyu/mymatrix"
 keywords = ["matrix", "fraction"]
 
 [dependencies]
-pyinrs = "1.8"
+pyinrs = "1.9"
 auto_ops = "0.3"
 
 [dev-dependencies]
-rstest = "0.22"
+rstest = "0.23"
