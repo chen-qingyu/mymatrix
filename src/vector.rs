@@ -105,7 +105,7 @@ impl Vector {
         if a.size() == 2 && b.size() == 2 {
             Self::from([a[0] * b[1] - a[1] * b[0]])
         } else if a.size() == 3 && b.size() == 3 {
-            return Self::from([a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]);
+            Self::from([a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]])
         } else {
             panic!("Error: Incompatible dimensions for cross product.");
         }
