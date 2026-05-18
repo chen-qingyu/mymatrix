@@ -66,6 +66,11 @@ impl Matrix {
         self.rows.is_empty()
     }
 
+    /// Returns `true` if the matrix is square.
+    pub fn is_square(&self) -> bool {
+        self.row_size() == self.col_size()
+    }
+
     /// Returns `true` if the matrix is symmetric.
     pub fn is_symmetric(&self) -> bool {
         if self.row_size() != self.col_size() {
@@ -433,6 +438,12 @@ impl From<Vec<Vec<i32>>> for Matrix {
     fn from(value: Vec<Vec<i32>>) -> Self {
         let rows = value.into_iter().map(Vector::from).collect();
         Self { rows }
+    }
+}
+
+impl From<Vec<Vector>> for Matrix {
+    fn from(value: Vec<Vector>) -> Self {
+        Self { rows: value }
     }
 }
 

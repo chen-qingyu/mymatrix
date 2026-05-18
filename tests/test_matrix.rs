@@ -1,4 +1,4 @@
-use mymatrix::Matrix;
+use mymatrix::{Matrix, Vector};
 use pyinrs::Fraction;
 use rstest::{fixture, rstest};
 
@@ -34,6 +34,22 @@ fn basics(setup: Fixture) {
     assert_eq!(Matrix::from([[1, 2, 3]]).row_size(), 1);
     assert_eq!(Matrix::from([[1, 2, 3]]).col_size(), 3);
     assert!(!Matrix::from([[1, 2, 3]]).is_empty());
+}
+
+#[rstest]
+fn is_square(setup: Fixture) {
+    assert!(setup.mat_0x0.is_square());
+    assert!(setup.mat_1x1.is_square());
+    assert!(setup.mat_3x3.is_square());
+    assert!(!Matrix::from([[1, 2, 3]]).is_square());
+    assert!(!Matrix::from([[1], [2]]).is_square());
+}
+
+#[rstest]
+fn from_vec_vector() {
+    let vecs = vec![Vector::from([1, 2, 3]), Vector::from([4, 5, 6])];
+    let m = Matrix::from(vecs);
+    assert_eq!(m, Matrix::from([[1, 2, 3], [4, 5, 6]]));
 }
 
 #[rstest]
