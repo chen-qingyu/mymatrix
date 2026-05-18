@@ -237,6 +237,25 @@ auto_ops::impl_op_ex!(*|a: &Vector, b: &Vector| -> Fraction {
     result
 });
 
+impl std::ops::Neg for Vector {
+    type Output = Vector;
+
+    fn neg(mut self) -> Vector {
+        for elem in &mut self.elements {
+            *elem = -(*elem);
+        }
+        self
+    }
+}
+
+impl std::ops::Neg for &Vector {
+    type Output = Vector;
+
+    fn neg(self) -> Vector {
+        -(self.clone())
+    }
+}
+
 impl IntoIterator for Vector {
     type Item = Fraction;
     type IntoIter = std::vec::IntoIter<Self::Item>;

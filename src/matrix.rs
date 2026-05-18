@@ -544,6 +544,27 @@ auto_ops::impl_op_ex!(*|a: &Matrix, b: &Matrix| -> Matrix {
     result
 });
 
+impl std::ops::Neg for Matrix {
+    type Output = Matrix;
+
+    fn neg(mut self) -> Matrix {
+        for row in &mut self.rows {
+            for elem in &mut row.elements {
+                *elem = -(*elem);
+            }
+        }
+        self
+    }
+}
+
+impl std::ops::Neg for &Matrix {
+    type Output = Matrix;
+
+    fn neg(self) -> Matrix {
+        -(self.clone())
+    }
+}
+
 impl IntoIterator for Matrix {
     type Item = Vector;
     type IntoIter = std::vec::IntoIter<Self::Item>;
