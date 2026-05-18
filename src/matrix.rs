@@ -555,6 +555,16 @@ auto_ops::impl_op_ex!(*|a: &Matrix, b: &Matrix| -> Matrix {
     result
 });
 
+auto_ops::impl_op_ex!(*|a: &Matrix, b: &Vector| -> Vector {
+    detail::check_size(a.col_size(), b.size());
+
+    let mut result = Vector::zeros(a.row_size());
+    for r in 0..a.row_size() {
+        result[r] = &a[r] * b;
+    }
+    result
+});
+
 impl std::ops::Neg for Matrix {
     type Output = Matrix;
 

@@ -296,6 +296,19 @@ fn mul() {
 }
 
 #[rstest]
+fn mul_vector() {
+    let m = Matrix::from([[1, 2], [3, 4], [5, 6]]);
+    let v = Vector::from([1, 2]);
+    assert_eq!(&m * &v, Vector::from([5, 11, 17]));
+
+    // identity
+    assert_eq!(&Matrix::identity(3) * &Vector::from([7, 8, 9]), Vector::from([7, 8, 9]));
+
+    // zero matrix
+    assert_eq!(&Matrix::zeros(2, 3) * &Vector::from([1, 2, 3]), Vector::zeros(2));
+}
+
+#[rstest]
 fn format(setup: Fixture) {
     assert_eq!(format!("{}", setup.mat_0x0), "[\n]");
     assert_eq!(format!("{}", setup.mat_1x1), "[\n2\n]");
