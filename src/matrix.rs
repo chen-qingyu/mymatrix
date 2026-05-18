@@ -542,6 +542,18 @@ auto_ops::impl_op_ex_commutative!(*|a: Matrix, b: i32| -> Matrix {
     a
 });
 
+auto_ops::impl_op_ex!(/=|a: &mut Matrix, b: Fraction| {
+    for r in 0..a.row_size() {
+        a.rows[r] /= b;
+    }
+});
+
+auto_ops::impl_op_ex!(/|a: &Matrix, b: Fraction| -> Matrix {
+    let mut a = a.clone();
+    a /= b;
+    a
+});
+
 auto_ops::impl_op_ex!(*|a: &Matrix, b: &Matrix| -> Matrix {
     detail::check_size(a.col_size(), b.row_size());
 

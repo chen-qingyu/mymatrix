@@ -136,6 +136,16 @@ fn sub() {
 }
 
 #[rstest]
+fn scalar_div() {
+    assert_eq!(Vector::from([2]) / Fraction::from(2), Vector::from([1]));
+    assert_eq!(Vector::from([3, 6, 9]) / Fraction::from(3), Vector::from([1, 2, 3]));
+    assert_eq!(
+        Vector::from([1, 2]) / Fraction::from(2) / Fraction::from(2),
+        Vector::from([Fraction::from((1, 4)), Fraction::from((2, 4))])
+    );
+}
+
+#[rstest]
 fn scalar_mul() {
     assert_eq!(Fraction::from(1) * Vector::from([1]), Vector::from([1]));
     assert_eq!(Vector::from([1]) * Fraction::from(1), Vector::from([1]));

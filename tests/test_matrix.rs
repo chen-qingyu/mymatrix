@@ -296,6 +296,12 @@ fn mul() {
 }
 
 #[rstest]
+fn scalar_div() {
+    assert_eq!(Matrix::create(2, 2, 2.into()) / Fraction::from(2), Matrix::create(2, 2, 1.into()));
+    assert_eq!(Matrix::from([[3, 6], [9, 12]]) / Fraction::from(3), Matrix::from([[1, 2], [3, 4]]));
+}
+
+#[rstest]
 fn mul_vector() {
     let m = Matrix::from([[1, 2], [3, 4], [5, 6]]);
     let v = Vector::from([1, 2]);
