@@ -16,7 +16,7 @@ To use it, add the following lines to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-mymatrix = "0"
+mymatrix = "1.0"
 ```
 
 Some simple examples:
@@ -61,4 +61,21 @@ let d = Matrix::identity(2);
 let A = Matrix::from([[1, 2, 3], [4, 5, 6], [7, 8, 0]]);
 assert_eq!(A.adj(), A.det() * A.inv().unwrap()); //  A.adj  = |A| * A.inv
 assert_eq!(A.adj().det(), A.det() * A.det());    // |A.adj| = |A|^(n-1)
+
+// Matrix * Vector
+Matrix::from([[1, 2], [3, 4]]) * Vector::from([1, 2]); // [5, 11]
+
+// Solve linear system Ax = b
+let a = Matrix::from([[2, 3], [4, 5]]);
+let b = Vector::from([7, 13]);
+let x = a.solve(&b).unwrap(); // [2, 1]
+
+// Matrix power
+Matrix::from([[1, 2], [3, 4]]).pow(3);
+/*
+[
+37  54
+81 118
+]
+*/
 ```
