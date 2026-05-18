@@ -302,9 +302,7 @@ impl Matrix {
         let n = self.row_size();
 
         if self.is_upper() {
-            return (Matrix::zeros(n, n), self.clone());
-        } else if self.is_lower() {
-            return (self.clone(), Matrix::zeros(n, n));
+            return (Matrix::identity(n), self.clone());
         }
 
         let mut l = Self::identity(n);
