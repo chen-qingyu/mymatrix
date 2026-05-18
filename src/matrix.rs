@@ -173,22 +173,29 @@ impl Matrix {
     pub fn row_canonical_form(&self) -> Self {
         let mut m = self.row_echelon_form();
 
-        let n = usize::min(m.row_size(), m.col_size());
+        // find the pivot column for each row
+        let pivot_cols: Vec<Option<usize>> = (0..m.row_size())
+            .map(|r| if m[r].is_zero() { None } else { Some(m[r].count_leading_zeros()) })
+            .collect();
 
-        // eliminate elements above the pivot
-        for c in 0..n {
-            for r in 0..c {
-                if m[c][c] != 0.into() {
-                    m.e_row_sum(r, c, -(m[r][c] / m[c][c]));
+        // eliminate elements above each pivot
+        for (pivot_row, &pivot_col) in pivot_cols.iter().enumerate() {
+            if let Some(col) = pivot_col {
+                for r in 0..pivot_row {
+                    if m[r][col] != 0.into() {
+                        m.e_row_sum(r, pivot_row, -(m[r][col] / m[pivot_row][col]));
+                    }
                 }
             }
         }
 
-        // make pivot equals 1
-        let mut i = 0;
-        while i < n && m[i][i] != 0.into() {
-            m.e_scalar_multiplication(i, Fraction::from(1) / m[i][i]);
-            i += 1;
+        // make each pivot equal to 1
+        for r in 0..m.row_size() {
+            if let Some(col) = pivot_cols[r] {
+                if m[r][col] != 0.into() {
+                    m.e_scalar_multiplication(r, Fraction::from(1) / m[r][col]);
+                }
+            }
         }
 
         m
