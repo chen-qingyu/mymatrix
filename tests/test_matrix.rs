@@ -236,6 +236,34 @@ fn lu_decomposition(setup: Fixture) {
 }
 
 #[rstest]
+fn pow() {
+    let a = Matrix::from([[1, 2], [3, 4]]);
+    assert_eq!(a.pow(0), Matrix::identity(2));
+    assert_eq!(a.pow(1), a);
+    // A^2 = [[7, 10], [15, 22]]
+    assert_eq!(a.pow(2), Matrix::from([[7, 10], [15, 22]]));
+    // A^3 = A^2 * A = [[37, 54], [81, 118]]
+    assert_eq!(a.pow(3), Matrix::from([[37, 54], [81, 118]]));
+}
+
+#[rstest]
+fn solve() {
+    // 2x + 3y = 7, 4x + 5y = 13 => x=1, y=1 (as fraction: x=2, y=1...)
+    // Actually: A = [[2,3],[4,5]], b = [7,13]
+    // det = 2*5 - 3*4 = 10-12 = -2
+    // x = (5*7 - 3*13)/(-2) = (35-39)/(-2) = 2
+    // y = (2*13 - 4*7)/(-2) = (26-28)/(-2) = 1
+    let a = Matrix::from([[2, 3], [4, 5]]);
+    let b = Vector::from([7, 13]);
+    assert_eq!(a.solve(&b), Some(Vector::from([2, 1])));
+
+    // singular system
+    let singular = Matrix::from([[1, 2], [2, 4]]);
+    let b2 = Vector::from([3, 6]);
+    assert_eq!(singular.solve(&b2), None);
+}
+
+#[rstest]
 fn split() {
     let matrix = Matrix::from([[1, 2], [3, 4], [5, 6]]);
 

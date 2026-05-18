@@ -341,6 +341,66 @@ impl Matrix {
         (l, u)
     }
 
+    /// Calculate the integer power of a square matrix using binary exponentiation.
+    pub fn pow(&self, exp: u32) -> Self {
+        detail::check_square(self);
+
+        match exp {
+            0 => Self::identity(self.row_size()),
+            1 => self.clone(),
+            _ => {
+                let mut result = Self::identity(self.row_size());
+                let mut base = self.clone();
+                let mut e = exp;
+                while e > 0 {
+                    if e & 1 == 1 {
+                        result = &result * &base;
+                    }
+                    base = &base * &base;
+                    e >>= 1;
+                }
+                result
+            }
+        }
+    }
+
+    /// Solve the linear system Ax = b, where A is this square matrix.
+    ///
+    /// Returns `None` if A is singular or the dimensions don't match.
+    pub fn solve(&self, b: &Vector) -> Option<Vector> {
+        detail::check_square(self);
+        detail::check_size(self.row_size(), b.size());
+
+        // build augmented matrix [A | b] and compute RREF
+        let mut augmented = self.clone();
+        for r in 0..self.row_size() {
+            augmented.rows[r].elements.push(b[r]);
+        }
+        let rref = augmented.row_canonical_form();
+
+        // check for inconsistency: row of [0 ... 0 | non-zero]
+        for r in 0..rref.row_size() {
+            let all_zero = rref[r].elements[..rref.col_size() - 1].iter().all(|&x| x == 0.into());
+            if all_zero && rref[r][rref.col_size() - 1] != 0.into() {
+                return None;
+            }
+        }
+
+        // extract solution (works when rank = n)
+        let n = self.row_size();
+        let mut x = Vector::zeros(n);
+        for i in 0..n {
+            // check if column i is a pivot column
+            if rref[i][i] != 0.into() {
+                x[i] = rref[i][n] / rref[i][i];
+            } else {
+                // free variable; skip or return None for unique-solution-only
+                return None;
+            }
+        }
+        Some(x)
+    }
+
     /// Split this matrix by rows.
     pub fn split_row(&self, n: usize) -> (Self, Self) {
         detail::check_bounds(n, 0, self.row_size());
