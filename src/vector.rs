@@ -57,7 +57,7 @@ impl Vector {
         (self * that) == 0.into()
     }
 
-    /// Determine whether two vectors are paralle.
+    /// Determine whether two vectors are parallel.
     pub fn is_parallel(&self, that: &Self) -> bool {
         detail::check_empty(self.size());
         detail::check_size(self.size(), that.size());
