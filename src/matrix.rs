@@ -548,9 +548,7 @@ impl Matrix {
 
     /// Elementary Row Operations: Row Sum. (A[i] += A[j] * k)
     pub fn e_row_sum(&mut self, i: usize, j: usize, k: Fraction) -> &Self {
-        // clone row j to avoid clone twice in *
-        let mut scaled = self[j].clone();
-        scaled *= k;
+        let scaled = self[j].clone() * k;
         self.rows[i] += scaled;
         self
     }

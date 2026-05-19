@@ -72,7 +72,7 @@ impl Vector {
         // calc the scale factor
         let scale = that[i] / self[i];
         // if equal after scale-up, then parallel
-        self * scale == *that
+        self.clone() * scale == *that
     }
 
     /// Calculate the norm (abs) of the vector.
@@ -208,8 +208,8 @@ auto_ops::impl_op_ex!(*=|a: &mut Vector, b: Fraction| {
     }
 });
 
-auto_ops::impl_op_ex_commutative!(*|a: &Vector, b: Fraction| -> Vector {
-    let mut a = a.clone();
+auto_ops::impl_op_ex_commutative!(*|a: Vector, b: Fraction| -> Vector {
+    let mut a = a;
     a *= b;
     a
 });
@@ -220,8 +220,8 @@ auto_ops::impl_op_ex!(*=|a: &mut Vector, b: i32| {
     }
 });
 
-auto_ops::impl_op_ex_commutative!(*|a: &Vector, b: i32| -> Vector {
-    let mut a = a.clone();
+auto_ops::impl_op_ex_commutative!(*|a: Vector, b: i32| -> Vector {
+    let mut a = a;
     a *= b;
     a
 });
@@ -232,8 +232,8 @@ auto_ops::impl_op_ex!(/=|a: &mut Vector, b: Fraction| {
     }
 });
 
-auto_ops::impl_op_ex!(/|a: &Vector, b: Fraction| -> Vector {
-    let mut a = a.clone();
+auto_ops::impl_op_ex!(/|a: Vector, b: Fraction| -> Vector {
+    let mut a = a;
     a /= b;
     a
 });
