@@ -321,6 +321,64 @@ impl Matrix {
         self.row_size() - zeros
     }
 
+    /// LDL^T decomposition (rational Cholesky) for symmetric positive definite matrices.
+    ///
+    /// Returns `(L, d)`, where `L` is a unit lower triangular matrix and `d` is the
+    /// diagonal of `D`, satisfying `A = L * D * L^T`.
+    ///
+    /// This is the exact-rational analogue of the classical Cholesky decomposition.
+    /// Instead of $A = G G^T$ (which requires `sqrt`), it computes
+    /// $A = L D L^T$ where $G = L \sqrt{D}$.
+    ///
+    /// # Errors
+    /// - `Err(MatrixError::NotPositiveDefinite)` if the matrix is not symmetric
+    ///   positive definite.
+    ///
+    /// # Panics
+    /// Panics if the matrix is not square.
+    pub fn cholesky(&self) -> Result<(Self, Vector), MatrixError> {
+        detail::check_square(self);
+
+        if !self.is_symmetric() {
+            return Err(MatrixError::NotPositiveDefinite);
+        }
+
+        let n = self.row_size();
+
+        // L is unit lower triangular (initialized as identity)
+        let mut l = Self::identity(n);
+        // Diagonal of D
+        let mut d = Vector::zeros(n);
+
+        for i in 0..n {
+            // d[i] = A[i][i] - sum(L[i][k]^2 * d[k] for k in 0..i)
+            let mut di = self[i][i];
+            for k in 0..i {
+                di -= l[i][k] * l[i][k] * d[k];
+            }
+
+            if di == 0.into() {
+                return Err(MatrixError::Singular);
+            }
+            if di < 0.into() {
+                return Err(MatrixError::NotPositiveDefinite);
+            }
+
+            d[i] = di;
+
+            // L[j][i] = (A[j][i] - sum(L[j][k]*L[i][k]*d[k] for k in 0..i)) / d[i]
+            for j in (i + 1)..n {
+                let mut lji = self[j][i];
+                for k in 0..i {
+                    lji -= l[j][k] * l[i][k] * d[k];
+                }
+                l[j][i] = lji / d[i];
+            }
+        }
+
+        Ok((l, d))
+    }
+
     /// LU decomposition using the Doolittle algorithm.
     ///
     /// Returns `Err(MatrixError::Singular)` if the matrix is singular.

@@ -236,6 +236,46 @@ fn lu_decomposition(setup: Fixture) {
 }
 
 #[rstest]
+fn cholesky() {
+    // A = [[4, 2], [2, 3]] is SPD
+    // Expected: L = [[1, 0], [1/2, 1]], D = [4, 2]
+    let a = Matrix::from([[4, 2], [2, 3]]);
+    let (l, d) = a.cholesky().unwrap();
+    assert_eq!(l, Matrix::from([[Fraction::from(1), Fraction::from(0)], [Fraction::from((1, 2)), Fraction::from(1)]]));
+    assert_eq!(d, Vector::from([4, 2]));
+
+    // verify A = L * D * L^T
+    let n = a.row_size();
+    let mut d_mat = Matrix::zeros(n, n);
+    for i in 0..n {
+        d_mat[i][i] = d[i];
+    }
+    assert_eq!(&l * &d_mat * &l.transpose(), a);
+
+    // 3x3 example: A = [[5, 4, 2], [4, 5, 2], [2, 2, 3]]
+    let a3 = Matrix::from([[5, 4, 2], [4, 5, 2], [2, 2, 3]]);
+    let (l3, d3) = a3.cholesky().unwrap();
+    let mut d3_mat = Matrix::zeros(3, 3);
+    for i in 0..3 {
+        d3_mat[i][i] = d3[i];
+    }
+    assert_eq!(&l3 * &d3_mat * &l3.transpose(), a3);
+
+    // non-symmetric -> NotPositiveDefinite
+    let non_sym = Matrix::from([[1, 2], [3, 4]]);
+    assert_eq!(non_sym.cholesky(), Err(MatrixError::NotPositiveDefinite));
+
+    // non-positive-definite -> NotPositiveDefinite
+    let non_pd = Matrix::from([[-1, 0], [0, -1]]);
+    assert_eq!(non_pd.cholesky(), Err(MatrixError::NotPositiveDefinite));
+
+    // identity
+    let (l_id, d_id) = Matrix::identity(3).cholesky().unwrap();
+    assert_eq!(l_id, Matrix::identity(3));
+    assert_eq!(d_id, Vector::ones(3));
+}
+
+#[rstest]
 fn pow() {
     let a = Matrix::from([[1, 2], [3, 4]]);
     assert_eq!(a.pow(0), Matrix::identity(2));
