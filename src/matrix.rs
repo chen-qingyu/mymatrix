@@ -534,19 +534,19 @@ impl Matrix {
         self
     }
 
-    /// Elementary Row Operations: Row Swap. (A[i] <=> A[j])
+    /// Elementary Row Operations: Row Swap. (`A[i] <=> A[j]`)
     pub fn e_row_swap(&mut self, i: usize, j: usize) -> &Self {
         self.rows.swap(i, j);
         self
     }
 
-    /// Elementary Row Operations: Scalar Multiplication. (A[i] *= k)
+    /// Elementary Row Operations: Scalar Multiplication. (`A[i] *= k`)
     pub fn e_scalar_multiplication(&mut self, i: usize, k: Fraction) -> &Self {
         self.rows[i] *= k;
         self
     }
 
-    /// Elementary Row Operations: Row Sum. (A[i] += A[j] * k)
+    /// Elementary Row Operations: Row Sum. (`A[i] += A[j] * k`)
     pub fn e_row_sum(&mut self, i: usize, j: usize, k: Fraction) -> &Self {
         let scaled = self[j].clone() * k;
         self.rows[i] += scaled;
