@@ -3,7 +3,7 @@ use std::{
     ops::{Index, IndexMut},
 };
 
-use crate::{detail, Vector};
+use crate::{detail, MatrixError, Vector};
 
 use pyinrs::Fraction;
 
@@ -14,12 +14,12 @@ pub struct Matrix {
 }
 
 impl Matrix {
-    /// Create a new matrix object.
+    /// Create a new empty matrix (0 rows, 0 columns).
     pub fn new() -> Self {
         Self { rows: Vec::new() }
     }
 
-    /// Create a row x col matrix with all identical elements.
+    /// Create a `row x col` matrix filled with `value`.
     pub fn create(row: usize, col: usize, value: Fraction) -> Self {
         let mut rows = Vec::with_capacity(row);
         for _ in 0..row {
@@ -28,17 +28,17 @@ impl Matrix {
         Self { rows }
     }
 
-    /// Create a row x col matrix with all 0 elements.
+    /// Create a `row x col` zero matrix.
     pub fn zeros(row: usize, col: usize) -> Self {
         Self::create(row, col, 0.into())
     }
 
-    /// Create a row x col matrix with all 1 elements.
+    /// Create a `row x col` matrix filled with 1.
     pub fn ones(row: usize, col: usize) -> Self {
         Self::create(row, col, 1.into())
     }
 
-    /// Generate an n-order identity matrix.
+    /// Generate an `n x n` identity matrix.
     pub fn identity(n: usize) -> Self {
         let mut m = Self::zeros(n, n);
         for i in 0..n {
@@ -128,6 +128,9 @@ impl Matrix {
     }
 
     /// Calculate the trace of the matrix.
+    ///
+    /// # Panics
+    /// Panics if the matrix is not square.
     pub fn trace(&self) -> Fraction {
         detail::check_square(self);
 
@@ -207,6 +210,9 @@ impl Matrix {
     }
 
     /// Calculate the determinant of this matrix.
+    ///
+    /// # Panics
+    /// Panics if the matrix is not square.
     pub fn det(&self) -> Fraction {
         detail::check_square(self);
 
@@ -236,7 +242,10 @@ impl Matrix {
         det
     }
 
-    /// Return the matrix that removed the i-th row and j-th column, 0 <= i, j < n.
+    /// Return the matrix obtained by removing the `i`-th row and `j`-th column.
+    ///
+    /// # Panics
+    /// Panics if `i` or `j` is out of bounds.
     pub fn submatrix(&self, i: usize, j: usize) -> Self {
         let mut submatrix = Vec::with_capacity(self.row_size() - 1);
         for r in 0..self.row_size() {
@@ -281,12 +290,17 @@ impl Matrix {
     }
 
     /// Calculate the inverse of this matrix.
-    pub fn inv(&self) -> Option<Self> {
+    ///
+    /// Returns `Err(MatrixError::Singular)` if the matrix is not invertible.
+    ///
+    /// # Panics
+    /// Panics if the matrix is not square.
+    pub fn inv(&self) -> Result<Self, MatrixError> {
         detail::check_square(self);
 
         // inverse of empty matrix is empty matrix
         if self.is_empty() {
-            return Some(Matrix::new());
+            return Ok(Matrix::new());
         }
 
         // generate augmented matrix [A:E] and transform [A:E] to reduced row echelon form and split
@@ -295,9 +309,9 @@ impl Matrix {
 
         // now, the original E is the inverse of A if rank = n
         if !rref.0[n - 1].is_zero() {
-            Some(rref.1)
+            Ok(rref.1)
         } else {
-            None
+            Err(MatrixError::Singular)
         }
     }
 
@@ -307,14 +321,20 @@ impl Matrix {
         self.row_size() - zeros
     }
 
-    /// LU decomposition, use Doolittle algorithm.
-    pub fn lu_decomposition(&self) -> (Self, Self) {
+    /// LU decomposition using the Doolittle algorithm.
+    ///
+    /// Returns `Err(MatrixError::Singular)` if the matrix is singular.
+    ///
+    /// # Panics
+    /// Panics if the matrix is not square.
+    pub fn lu_decomposition(&self) -> Result<(Self, Self), MatrixError> {
         detail::check_square(self);
 
         let n = self.row_size();
 
         if self.is_upper() {
-            return (Matrix::identity(n), self.clone());
+            // include zero matrix
+            return Ok((Matrix::identity(n), self.clone()));
         }
 
         let mut l = Self::identity(n);
@@ -334,14 +354,20 @@ impl Matrix {
                 for k in 0..i {
                     sum += l[j][k] * u[k][i];
                 }
+                if u[i][i] == 0.into() {
+                    return Err(MatrixError::Singular);
+                }
                 l[j][i] = (self[j][i] - sum) / u[i][i];
             }
         }
 
-        (l, u)
+        Ok((l, u))
     }
 
     /// Calculate the integer power of a square matrix using binary exponentiation.
+    ///
+    /// # Panics
+    /// Panics if the matrix is not square.
     pub fn pow(&self, exp: u32) -> Self {
         detail::check_square(self);
 
@@ -364,10 +390,15 @@ impl Matrix {
         }
     }
 
-    /// Solve the linear system Ax = b, where A is this square matrix.
+    /// Solve the linear system `Ax = b`, where `A` is this square matrix.
     ///
-    /// Returns `None` if A is singular or the dimensions don't match.
-    pub fn solve(&self, b: &Vector) -> Option<Vector> {
+    /// Returns `Err(MatrixError::Singular)` if `A` is singular
+    /// (no unique solution or inconsistent system).
+    ///
+    /// # Panics
+    /// Panics if the matrix is not square, or if the size of `b` does not match
+    /// the number of rows of `A`.
+    pub fn solve(&self, b: &Vector) -> Result<Vector, MatrixError> {
         detail::check_square(self);
         detail::check_size(self.row_size(), b.size());
 
@@ -382,7 +413,7 @@ impl Matrix {
         for r in 0..rref.row_size() {
             let all_zero = rref[r].elements[..rref.col_size() - 1].iter().all(|&x| x == 0.into());
             if all_zero && rref[r][rref.col_size() - 1] != 0.into() {
-                return None;
+                return Err(MatrixError::Singular);
             }
         }
 
@@ -394,11 +425,11 @@ impl Matrix {
             if rref[i][i] != 0.into() {
                 x[i] = rref[i][n] / rref[i][i];
             } else {
-                // free variable; skip or return None for unique-solution-only
-                return None;
+                // free variable; no unique solution
+                return Err(MatrixError::Singular);
             }
         }
-        Some(x)
+        Ok(x)
     }
 
     /// Split this matrix by rows.

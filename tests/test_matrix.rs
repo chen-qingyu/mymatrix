@@ -1,4 +1,4 @@
-use mymatrix::{Matrix, Vector};
+use mymatrix::{Matrix, MatrixError, Vector};
 use pyinrs::Fraction;
 use rstest::{fixture, rstest};
 
@@ -196,13 +196,13 @@ fn adj(setup: Fixture) {
 
 #[rstest]
 fn inv(setup: Fixture) {
-    assert_eq!(setup.mat_0x0.inv(), Some(Matrix::new()));
-    assert_eq!(setup.mat_1x1.inv(), Some(Matrix::from([[Fraction::from((1, 2))]])));
-    assert_eq!(setup.mat_3x3.inv(), None);
+    assert_eq!(setup.mat_0x0.inv(), Ok(Matrix::new()));
+    assert_eq!(setup.mat_1x1.inv(), Ok(Matrix::from([[Fraction::from((1, 2))]])));
+    assert_eq!(setup.mat_3x3.inv(), Err(MatrixError::Singular));
 
     assert_eq!(
         Matrix::from([[1, 2, 3], [4, 5, 6], [7, 8, 0]]).inv(),
-        Some(Matrix::from([
+        Ok(Matrix::from([
             [Fraction::from((-16, 9)), Fraction::from((8, 9)), Fraction::from((-1, 9))],
             [Fraction::from((14, 9)), Fraction::from((-7, 9)), Fraction::from((2, 9))],
             [Fraction::from((-1, 9)), Fraction::from((2, 9)), Fraction::from((-1, 9))],
@@ -226,12 +226,12 @@ fn rank(setup: Fixture) {
 fn lu_decomposition(setup: Fixture) {
     assert_eq!(
         Matrix::from([[2, 3, 1], [4, 7, 1], [6, 7, 3]]).lu_decomposition(),
-        (Matrix::from([[1, 0, 0], [2, 1, 0], [3, -2, 1]]), Matrix::from([[2, 3, 1], [0, 1, -1], [0, 0, -2]]))
+        Ok((Matrix::from([[1, 0, 0], [2, 1, 0], [3, -2, 1]]), Matrix::from([[2, 3, 1], [0, 1, -1], [0, 0, -2]])))
     );
 
     assert_eq!(
         setup.mat_3x3.lu_decomposition(),
-        (Matrix::from([[1, 0, 0], [4, 1, 0], [7, 2, 1]]), Matrix::from([[1, 2, 3], [0, -3, -6], [0, 0, 0]]))
+        Ok((Matrix::from([[1, 0, 0], [4, 1, 0], [7, 2, 1]]), Matrix::from([[1, 2, 3], [0, -3, -6], [0, 0, 0]])))
     );
 }
 
@@ -248,19 +248,15 @@ fn pow() {
 
 #[rstest]
 fn solve() {
-    // 2x + 3y = 7, 4x + 5y = 13 => x=1, y=1 (as fraction: x=2, y=1...)
-    // Actually: A = [[2,3],[4,5]], b = [7,13]
-    // det = 2*5 - 3*4 = 10-12 = -2
-    // x = (5*7 - 3*13)/(-2) = (35-39)/(-2) = 2
-    // y = (2*13 - 4*7)/(-2) = (26-28)/(-2) = 1
+    // 2x + 3y = 7, 4x + 5y = 13 => x=2, y=1
     let a = Matrix::from([[2, 3], [4, 5]]);
     let b = Vector::from([7, 13]);
-    assert_eq!(a.solve(&b), Some(Vector::from([2, 1])));
+    assert_eq!(a.solve(&b), Ok(Vector::from([2, 1])));
 
-    // singular system
+    // singular system (no unique solution)
     let singular = Matrix::from([[1, 2], [2, 4]]);
     let b2 = Vector::from([3, 6]);
-    assert_eq!(singular.solve(&b2), None);
+    assert_eq!(singular.solve(&b2), Err(MatrixError::Singular));
 }
 
 #[rstest]

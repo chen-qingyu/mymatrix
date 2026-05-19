@@ -1,6 +1,9 @@
 use crate::Matrix;
 
-// Check whether the index is valid (begin <= pos < end).
+/// Check whether the index is valid (`begin <= pos < end`).
+///
+/// # Panics
+/// Panics if `pos` is out of the range [`begin`, `end`).
 #[inline]
 pub fn check_bounds(pos: usize, begin: usize, end: usize) {
     if pos < begin || pos >= end {
@@ -8,7 +11,10 @@ pub fn check_bounds(pos: usize, begin: usize, end: usize) {
     }
 }
 
-// Check whether is not empty.
+/// Check whether the container is not empty.
+///
+/// # Panics
+/// Panics if `size` is 0.
 #[inline]
 pub fn check_empty(size: usize) {
     if size == 0 {
@@ -16,7 +22,10 @@ pub fn check_empty(size: usize) {
     }
 }
 
-// Check that two vectors are of the same size.
+/// Check that two dimensions are equal.
+///
+/// # Panics
+/// Panics if `s1 != s2`.
 #[inline]
 pub fn check_size(s1: usize, s2: usize) {
     if s1 != s2 {
@@ -24,7 +33,10 @@ pub fn check_size(s1: usize, s2: usize) {
     }
 }
 
-// Check if the matrix is a square matrix.
+/// Check if the matrix is a square matrix.
+///
+/// # Panics
+/// Panics if the matrix is not square.
 #[inline]
 pub fn check_square(m: &Matrix) {
     if m.row_size() != m.col_size() {
