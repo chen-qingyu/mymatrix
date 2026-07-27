@@ -191,13 +191,13 @@ impl Matrix {
                 j += 1;
             }
             for k in i + 1..m.row_size() {
-                if j < m.col_size() && m.rows[i][j] != 0.into() {
+                if j < m.col_size() {
                     m.e_row_sum(k, i, -m.rows[k][j] / m.rows[i][j]);
                 }
             }
         }
 
-        // transform to the row echelon form. It's so elegant, I'm a genius haha.
+        // order rows by pivot column; zero rows (key = size) sink to the bottom
         m.rows.sort_by_key(|r| r.count_leading_zeros());
 
         m
@@ -273,6 +273,9 @@ impl Matrix {
     /// # Panics
     /// Panics if `i` or `j` is out of bounds.
     pub fn submatrix(&self, i: usize, j: usize) -> Self {
+        detail::check_bounds(i, 0, self.row_size() - 1);
+        detail::check_bounds(j, 0, self.col_size() - 1);
+
         let mut submatrix = Vec::with_capacity(self.row_size() - 1);
         for r in 0..self.row_size() {
             if r != i {
@@ -384,7 +387,7 @@ impl Matrix {
             }
 
             if di == 0.into() {
-                return Err(MatrixError::Singular);
+                return Err(MatrixError::NotPositiveDefinite);
             }
             if di < 0.into() {
                 return Err(MatrixError::NotPositiveDefinite);
@@ -405,9 +408,10 @@ impl Matrix {
         Ok((l, d))
     }
 
-    /// LU decomposition using the Doolittle algorithm.
+    /// LU decomposition using the Doolittle algorithm with row pivoting.
     ///
-    /// Returns `Err(MatrixError::Singular)` if the matrix is singular.
+    /// Returns `Err(MatrixError::Singular)` if and only if the matrix is
+    /// singular. Rows are swapped only when a pivot is zero.
     ///
     /// # Panics
     /// Panics if the matrix is not square.
@@ -415,33 +419,39 @@ impl Matrix {
         detail::check_square(self);
 
         let n = self.row_size();
-
-        if self.is_upper() {
-            // include zero matrix
-            return Ok((Matrix::identity(n), self.clone()));
-        }
-
-        let mut l = Self::identity(n);
-        let mut u = Self::zeros(n, n);
+        let mut a = self.clone();
 
         for i in 0..n {
-            for j in 0..(i + 1) {
-                let mut sum = Fraction::new();
-                for k in 0..j {
-                    sum += l[j][k] * u[k][i];
-                }
-                u[j][i] = self[j][i] - sum;
+            // find a non-zero pivot in column i (rows i..n)
+            let mut pivot = i;
+            while pivot < n && a[pivot][i] == 0.into() {
+                pivot += 1;
+            }
+            if pivot == n {
+                return Err(MatrixError::Singular);
+            }
+            if pivot != i {
+                a.rows.swap(i, pivot);
             }
 
+            // column i of L (multipliers), then update the trailing submatrix (U)
             for j in (i + 1)..n {
-                let mut sum = Fraction::new();
-                for k in 0..i {
-                    sum += l[j][k] * u[k][i];
+                a[j][i] = a[j][i] / a[i][i];
+                for k in (i + 1)..n {
+                    a[j][k] = a[j][k] - a[j][i] * a[i][k];
                 }
-                if u[i][i] == 0.into() {
-                    return Err(MatrixError::Singular);
-                }
-                l[j][i] = (self[j][i] - sum) / u[i][i];
+            }
+        }
+
+        // extract L (unit lower triangular) and U (upper triangular)
+        let mut l = Self::identity(n);
+        let mut u = Self::zeros(n, n);
+        for i in 0..n {
+            for j in 0..i {
+                l[i][j] = a[i][j];
+            }
+            for j in i..n {
+                u[i][j] = a[i][j];
             }
         }
 
@@ -596,6 +606,12 @@ impl<const R: usize, const C: usize> From<[[i32; C]; R]> for Matrix {
 
 impl From<Vec<Vec<Fraction>>> for Matrix {
     fn from(value: Vec<Vec<Fraction>>) -> Self {
+        if let Some(first) = value.first() {
+            let len = first.len();
+            for row in &value[1..] {
+                assert_eq!(row.len(), len, "Error: All rows must have the same length.");
+            }
+        }
         let rows = value.into_iter().map(Vector::from).collect();
         Self { rows }
     }
@@ -603,6 +619,12 @@ impl From<Vec<Vec<Fraction>>> for Matrix {
 
 impl From<Vec<Vec<i32>>> for Matrix {
     fn from(value: Vec<Vec<i32>>) -> Self {
+        if let Some(first) = value.first() {
+            let len = first.len();
+            for row in &value[1..] {
+                assert_eq!(row.len(), len, "Error: All rows must have the same length.");
+            }
+        }
         let rows = value.into_iter().map(Vector::from).collect();
         Self { rows }
     }
@@ -610,6 +632,12 @@ impl From<Vec<Vec<i32>>> for Matrix {
 
 impl From<Vec<Vector>> for Matrix {
     fn from(value: Vec<Vector>) -> Self {
+        if let Some(first) = value.first() {
+            let len = first.size();
+            for v in &value[1..] {
+                assert_eq!(v.size(), len, "Error: All rows must have the same length.");
+            }
+        }
         Self { rows: value }
     }
 }
@@ -633,10 +661,14 @@ impl Display for Matrix {
         writeln!(f, "[")?;
 
         // calc the max width of element
+        let mut buf = String::new();
         let mut width = 0;
         for i in 0..self.row_size() {
             for j in 0..self.col_size() {
-                width = width.max(format!("{}", self[i][j]).len());
+                use std::fmt::Write;
+                write!(buf, "{}", self[i][j]).unwrap();
+                width = width.max(buf.len());
+                buf.clear();
             }
         }
 
@@ -646,7 +678,10 @@ impl Display for Matrix {
                 if j != 0 {
                     write!(f, " ")?;
                 }
-                write!(f, "{:>width$}", format!("{}", self[i][j]))?;
+                use std::fmt::Write;
+                write!(buf, "{}", self[i][j]).unwrap();
+                write!(f, "{:>width$}", buf)?;
+                buf.clear();
             }
             writeln!(f)?;
         }
@@ -738,8 +773,11 @@ auto_ops::impl_op_ex!(*|a: &Matrix, b: &Vector| -> Vector {
     detail::check_size(a.col_size(), b.size());
 
     let mut result = Vector::zeros(a.row_size());
-    for r in 0..a.row_size() {
-        result[r] = &a[r] * b;
+    // empty `b` (0 columns) yields the zero vector without a dot product
+    if !b.is_empty() {
+        for r in 0..a.row_size() {
+            result[r] = &a[r] * b;
+        }
     }
     result
 });

@@ -1,12 +1,12 @@
 use crate::Matrix;
 
-/// Check whether the index is valid (`begin <= pos < end`).
+/// Check whether the index is valid (`begin <= pos <= end`).
 ///
 /// # Panics
-/// Panics if `pos` is out of the range [`begin`, `end`).
+/// Panics if `pos` is out of the range [`begin`, `end`].
 #[inline]
 pub fn check_bounds(pos: usize, begin: usize, end: usize) {
-    if pos < begin || pos >= end {
+    if pos < begin || pos > end {
         panic!("Error: Index out of range.");
     }
 }

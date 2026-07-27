@@ -264,10 +264,8 @@ fn lu_decomposition(setup: Fixture) {
         Ok((Matrix::from([[1, 0, 0], [2, 1, 0], [3, -2, 1]]), Matrix::from([[2, 3, 1], [0, 1, -1], [0, 0, -2]])))
     );
 
-    assert_eq!(
-        setup.mat_3x3.lu_decomposition(),
-        Ok((Matrix::from([[1, 0, 0], [4, 1, 0], [7, 2, 1]]), Matrix::from([[1, 2, 3], [0, -3, -6], [0, 0, 0]])))
-    );
+    // singular matrix -> Err(Singular)
+    assert_eq!(setup.mat_3x3.lu_decomposition(), Err(MatrixError::Singular));
 }
 
 #[rstest]

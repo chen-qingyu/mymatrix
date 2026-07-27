@@ -51,33 +51,32 @@ impl Vector {
 
     /// Determine whether two vectors are orthogonal.
     pub fn is_orthogonal(&self, that: &Self) -> bool {
-        detail::check_empty(self.size());
         detail::check_size(self.size(), that.size());
 
-        (self * that) == 0.into()
+        self.is_empty() || (self * that) == 0.into()
     }
 
     /// Determine whether two vectors are parallel.
     pub fn is_parallel(&self, that: &Self) -> bool {
-        detail::check_empty(self.size());
         detail::check_size(self.size(), that.size());
 
-        // zero vector parallel to any vector
-        if self.is_zero() || that.is_zero() {
+        // empty or zero vector parallel to any vector
+        if self.is_empty() || self.is_zero() || that.is_zero() {
             return true;
         }
 
         // find the first non-zero element
         let i = self.count_leading_zeros();
-        // calc the scale factor
         let scale = that[i] / self[i];
-        // if equal after scale-up, then parallel
-        self.clone() * scale == *that
+        // compare element-by-element
+        self.elements.iter().zip(&that.elements).all(|(a, b)| *a * scale == *b)
     }
 
     /// Calculate the norm (abs) of the vector.
     pub fn norm(&self) -> f64 {
-        detail::check_empty(self.size());
+        if self.is_empty() {
+            return 0.0;
+        }
 
         let mut norm = 0.0;
         for i in 0..self.size() {
@@ -88,7 +87,9 @@ impl Vector {
 
     /// Calculate the number of leading zeros of this vector.
     pub fn count_leading_zeros(&self) -> usize {
-        detail::check_empty(self.size());
+        if self.is_empty() {
+            return 0;
+        }
 
         let mut lz: usize = 0;
         while self.elements[lz] == 0.into() {
@@ -159,9 +160,13 @@ impl Display for Vector {
         write!(f, "[")?;
 
         // calc the max width of element
+        let mut buf = String::new();
         let mut width = 0;
         for i in 0..self.size() {
-            width = width.max(format!("{}", self[i]).len());
+            use std::fmt::Write;
+            write!(buf, "{}", self[i]).unwrap();
+            width = width.max(buf.len());
+            buf.clear();
         }
 
         // align right, fill with space
@@ -169,7 +174,10 @@ impl Display for Vector {
             if i != 0 {
                 write!(f, " ")?;
             }
-            write!(f, "{:>width$}", format!("{}", self[i]))?;
+            use std::fmt::Write;
+            write!(buf, "{}", self[i]).unwrap();
+            write!(f, "{:>width$}", buf)?;
+            buf.clear();
         }
 
         write!(f, "]")
