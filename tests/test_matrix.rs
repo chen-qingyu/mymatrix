@@ -125,6 +125,41 @@ fn transpose(setup: Fixture) {
 }
 
 #[rstest]
+fn rotate_left(setup: Fixture) {
+    assert_eq!(setup.mat_0x0.rotate_left(), Matrix::new());
+    assert_eq!(setup.mat_1x1.rotate_left(), setup.mat_1x1);
+    assert_eq!(setup.mat_3x3.rotate_left(), Matrix::from([[3, 6, 9], [2, 5, 8], [1, 4, 7]]));
+
+    // 4 rotations = identity
+    assert_eq!(setup.mat_3x3.rotate_left().rotate_left().rotate_left().rotate_left(), setup.mat_3x3);
+
+    // non-square
+    assert_eq!(
+        Matrix::from([[1, 2, 3, 4], [5, 6, 7, 8]]).rotate_left(),
+        Matrix::from([[4, 8], [3, 7], [2, 6], [1, 5]])
+    );
+}
+
+#[rstest]
+fn rotate_right(setup: Fixture) {
+    assert_eq!(setup.mat_0x0.rotate_right(), Matrix::new());
+    assert_eq!(setup.mat_1x1.rotate_right(), setup.mat_1x1);
+    assert_eq!(setup.mat_3x3.rotate_right(), Matrix::from([[7, 4, 1], [8, 5, 2], [9, 6, 3]]));
+
+    // 4 rotations = identity
+    assert_eq!(setup.mat_3x3.rotate_right().rotate_right().rotate_right().rotate_right(), setup.mat_3x3);
+
+    // rotate_left = rotate_right * 3
+    assert_eq!(setup.mat_3x3.rotate_right().rotate_right().rotate_right(), setup.mat_3x3.rotate_left());
+
+    // non-square
+    assert_eq!(
+        Matrix::from([[1, 2, 3, 4], [5, 6, 7, 8]]).rotate_right(),
+        Matrix::from([[5, 1], [6, 2], [7, 3], [8, 4]])
+    );
+}
+
+#[rstest]
 fn row_echelon_form(setup: Fixture) {
     assert_eq!(setup.mat_0x0.row_echelon_form(), Matrix::new());
     assert_eq!(setup.mat_1x1.row_echelon_form(), Matrix::from([[2]]));

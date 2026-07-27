@@ -154,6 +154,32 @@ impl Matrix {
         result
     }
 
+    /// Rotate the matrix 90 degrees counter-clockwise.
+    pub fn rotate_left(&self) -> Self {
+        let m = self.col_size();
+        let mut result = Self::zeros(m, self.row_size());
+
+        for r in 0..self.row_size() {
+            for c in 0..m {
+                result[m - c - 1][r] = self[r][c];
+            }
+        }
+        result
+    }
+
+    /// Rotate the matrix 90 degrees clockwise.
+    pub fn rotate_right(&self) -> Self {
+        let n = self.row_size();
+        let mut result = Self::zeros(self.col_size(), n);
+
+        for r in 0..n {
+            for c in 0..self.col_size() {
+                result[c][n - r - 1] = self[r][c];
+            }
+        }
+        result
+    }
+
     /// Transform this matrix to general row echelon form.
     pub fn row_echelon_form(&self) -> Self {
         let mut m = self.clone();
