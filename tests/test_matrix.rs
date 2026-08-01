@@ -116,6 +116,21 @@ fn trace(setup: Fixture) {
 }
 
 #[rstest]
+fn diag() {
+    // non-square: min(row, col) elements
+    assert_eq!(Matrix::from([[1, 2, 3], [4, 5, 6]]).diag(), Vector::from([1, 5]));
+    assert_eq!(Matrix::identity(3).diag(), Vector::ones(3));
+    assert_eq!(Matrix::from([[7]]).diag(), Vector::from([7]));
+    assert_eq!(Matrix::new().diag(), Vector::new());
+
+    // round trip
+    let v = Vector::from([2, 3, 4]);
+    let d = Matrix::from_diagonal(&v);
+    assert_eq!(d, Matrix::from([[2, 0, 0], [0, 3, 0], [0, 0, 4]]));
+    assert_eq!(d.diag(), v);
+}
+
+#[rstest]
 fn transpose(setup: Fixture) {
     assert_eq!(setup.mat_0x0.transpose(), setup.mat_0x0);
     assert_eq!(setup.mat_1x1.transpose(), setup.mat_1x1);

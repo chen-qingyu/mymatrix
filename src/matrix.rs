@@ -45,6 +45,23 @@ impl Matrix {
         m
     }
 
+    /// Extract the main diagonal as a vector.
+    ///
+    /// For a non-square matrix, returns `min(row_size, col_size)` elements.
+    pub fn diag(&self) -> Vector {
+        let n = self.row_size().min(self.col_size());
+        Vector::from((0..n).map(|i| self[i][i]).collect::<Vec<_>>())
+    }
+
+    /// Create a diagonal matrix from the elements of a vector.
+    pub fn from_diagonal(v: &Vector) -> Self {
+        let mut m = Self::zeros(v.size(), v.size());
+        for i in 0..v.size() {
+            m[i][i] = v[i];
+        }
+        m
+    }
+
     /// Return the number of rows in the matrix.
     pub fn row_size(&self) -> usize {
         self.rows.len()
