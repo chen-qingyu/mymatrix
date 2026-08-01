@@ -461,11 +461,15 @@ impl Matrix {
     /// `col_size() - rank` rows.
     pub fn null_space(&self) -> Self {
         let (rref, pivot_cols) = self.rref_and_pivot_cols();
-        let free_cols: Vec<usize> = (0..self.col_size()).filter(|c| !pivot_cols.contains(c)).collect();
+        Self::null_basis(&rref, &pivot_cols, self.col_size())
+    }
 
+    /// Rows of the null-space basis (one per free column) built from an RREF.
+    fn null_basis(rref: &Self, pivot_cols: &[usize], col_count: usize) -> Self {
+        let free_cols: Vec<usize> = (0..col_count).filter(|c| !pivot_cols.contains(c)).collect();
         let mut basis = Vec::with_capacity(free_cols.len());
         for &f in &free_cols {
-            let mut v = Vector::zeros(self.col_size());
+            let mut v = Vector::zeros(col_count);
             v[f] = 1.into();
             for (i, &p) in pivot_cols.iter().enumerate() {
                 v[p] = -rref[i][f];
@@ -644,23 +648,29 @@ impl Matrix {
         (0..=n).map(|k| if k % 2 == 0 { e[k] } else { -e[k] }).collect()
     }
 
-    /// Solve the linear system `Ax = b`, where `A` is this square matrix.
+    /// Return the general solution of the linear system `Ax = b`, where `A`
+    /// is this square matrix.
+    ///
+    /// Returns `(x_p, N)`, where `x_p` is a particular solution and the rows
+    /// of `N` form a basis of the null space, so every solution is
+    /// `x_p + N[0]·c_1 + N[1]·c_2 + ...`. `N` is empty exactly when the
+    /// solution is unique.
     ///
     /// # Errors
-    /// Returns `Err(MatrixError::Singular)` if the system has no unique
-    /// solution, i.e. if `A` is singular (the system is then either
-    /// inconsistent or has infinitely many solutions).
+    /// Returns `Err(MatrixError::Singular)` if the system is inconsistent
+    /// (has no solution).
     ///
     /// # Panics
     /// Panics if the matrix is not square, or if the size of `b` does not match
     /// the number of rows of `A`.
-    pub fn solve(&self, b: &Vector) -> Result<Vector, MatrixError> {
+    pub fn general_solution(&self, b: &Vector) -> Result<(Vector, Self), MatrixError> {
         detail::check_square(self);
         detail::check_size(self.row_size(), b.size());
+        let n = self.row_size();
 
         // build augmented matrix [A | b] and compute RREF
         let mut augmented = self.clone();
-        for r in 0..self.row_size() {
+        for r in 0..n {
             augmented.rows[r].elements.push(b[r]);
         }
         let rref = augmented.row_canonical_form();
@@ -673,19 +683,35 @@ impl Matrix {
             }
         }
 
-        // extract solution (works when rank = n)
-        let n = self.row_size();
-        let mut x = Vector::zeros(n);
-        for i in 0..n {
-            // check if column i is a pivot column
-            if rref[i][i] != 0.into() {
-                x[i] = rref[i][n] / rref[i][i];
-            } else {
-                // free variable; no unique solution
-                return Err(MatrixError::Singular);
-            }
+        // particular solution with free variables set to 0
+        let pivot_cols: Vec<usize> = (0..rref.row_size())
+            .filter_map(|r| if rref[r].is_zero() { None } else { Some(rref[r].count_leading_zeros()) })
+            .collect();
+        let mut xp = Vector::zeros(n);
+        for (i, &p) in pivot_cols.iter().enumerate() {
+            xp[p] = rref[i][n];
         }
-        Ok(x)
+
+        Ok((xp, Self::null_basis(&rref, &pivot_cols, n)))
+    }
+
+    /// Solve the linear system `Ax = b`, where `A` is this square matrix.
+    ///
+    /// Returns the unique solution, or `Err(MatrixError::Singular)` if the
+    /// system has no unique solution (it is then either inconsistent or has
+    /// infinitely many solutions). For the general solution, use
+    /// `general_solution`.
+    ///
+    /// # Panics
+    /// Panics if the matrix is not square, or if the size of `b` does not match
+    /// the number of rows of `A`.
+    pub fn solve(&self, b: &Vector) -> Result<Vector, MatrixError> {
+        let (xp, null) = self.general_solution(b)?;
+        if null.is_empty() {
+            Ok(xp)
+        } else {
+            Err(MatrixError::Singular)
+        }
     }
 
     /// Split this matrix by rows.

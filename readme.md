@@ -70,6 +70,11 @@ let a = Matrix::from([[2, 3], [4, 5]]);
 let b = Vector::from([7, 13]);
 let x = a.solve(&b).unwrap(); // [2, 1]
 
+// General solution: (particular solution, null space basis)
+let m = Matrix::from([[1, 1], [1, 1]]);
+let (xp, null) = m.general_solution(&Vector::from([2, 2])).unwrap();
+// xp = [2, 0], null = [-1, 1]  =>  every solution is xp + c * null[0]
+
 // Matrix power
 Matrix::from([[1, 2], [3, 4]]).pow(3);
 /*

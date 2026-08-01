@@ -458,6 +458,34 @@ fn solve() {
 }
 
 #[rstest]
+fn general_solution() {
+    // unique solution: null space is empty
+    let a = Matrix::from([[2, 3], [4, 5]]);
+    let (xp, null) = a.general_solution(&Vector::from([7, 13])).unwrap();
+    assert_eq!(xp, Vector::from([2, 1]));
+    assert_eq!(null, Matrix::new());
+
+    // underdetermined but consistent: x + 2y = 3 (rank 1)
+    let s = Matrix::from([[1, 2], [2, 4]]);
+    let (xp, null) = s.general_solution(&Vector::from([3, 6])).unwrap();
+    assert_eq!(xp, Vector::from([3, 0]));
+    assert_eq!(null, Matrix::from([[-2, 1]]));
+    assert_eq!(&s * &xp, Vector::from([3, 6]));
+    assert_eq!(&s * &null[0], Vector::zeros(2));
+
+    // x + y = 2
+    let m = Matrix::from([[1, 1], [1, 1]]);
+    let (xp, null) = m.general_solution(&Vector::from([2, 2])).unwrap();
+    assert_eq!(xp, Vector::from([2, 0]));
+    assert_eq!(null, Matrix::from([[-1, 1]]));
+    assert_eq!(&m * &xp, Vector::from([2, 2]));
+    assert_eq!(&m * &null[0], Vector::zeros(2));
+
+    // inconsistent -> Err
+    assert_eq!(m.general_solution(&Vector::from([2, 3])), Err(MatrixError::Singular));
+}
+
+#[rstest]
 fn split() {
     let matrix = Matrix::from([[1, 2], [3, 4], [5, 6]]);
 
