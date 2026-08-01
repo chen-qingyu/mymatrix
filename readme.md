@@ -78,4 +78,33 @@ Matrix::from([[1, 2], [3, 4]]).pow(3);
 81 118
 ]
 */
+
+// Subspace bases
+let m = Matrix::from([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
+m.row_space();  // row space basis:    [1 2 3; 0 -3 -6]
+m.col_space();  // column space basis: [1 4 7; 2 5 8]
+m.null_space(); // null space basis:   [1 -2 1]
+
+// Characteristic polynomial: det(λI - A) = λ³ - 9λ² + 26λ - 24
+Matrix::from([[2, 0, 0], [0, 3, 0], [0, 0, 4]]).characteristic_polynomial(); // [1 -9 26 -24]
+
+// Moore-Penrose pseudo-inverse (works for singular / non-square matrices)
+Matrix::from([[1, 2], [2, 4]]).pseudo_inverse();
+/*
+[
+1/25 2/25
+2/25 4/25
+]
+*/
+
+// Column accessor
+Matrix::from([[1, 2, 3], [4, 5, 6]]).col(1); // [2 5]
+
+// Kronecker product and Hadamard (element-wise) product
+Matrix::from([[1, 2], [3, 4]]).kron(&Matrix::identity(2));
+Matrix::from([[1, 2], [3, 4]]).hadamard(&Matrix::ones(2, 2)); // [1 2; 3 4]
+
+// Diagonal extraction and construction
+Matrix::identity(3).diag(); // [1 1 1]
+Matrix::from_diagonal(&Vector::from([2, 3, 4]));
 ```
