@@ -352,6 +352,23 @@ impl Matrix {
         }
     }
 
+    /// Calculate the Moore–Penrose pseudo-inverse of this matrix.
+    ///
+    /// Generalizes `inv` to non-square or singular matrices. Uses the exact
+    /// rank factorization `A = B * C` and the formula
+    /// `A⁺ = Cᵀ (C Cᵀ)⁻¹ (Bᵀ B)⁻¹ Bᵀ`.
+    pub fn pseudo_inverse(&self) -> Self {
+        let b = self.col_space().transpose(); // m x r
+        if b.col_size() == 0 {
+            return Self::zeros(self.col_size(), self.row_size());
+        }
+
+        let bt_b_inv = (&b.transpose() * &b).inv().unwrap();
+        let c = &bt_b_inv * &b.transpose() * self; // r x n
+        let c_ct_inv = (&c * &c.transpose()).inv().unwrap();
+        &c.transpose() * &c_ct_inv * &bt_b_inv * &b.transpose()
+    }
+
     /// Calculate the rank of this matrix.
     pub fn rank(&self) -> usize {
         let zeros = self.row_echelon_form().rows.iter().filter(|row| row.is_zero()).count();

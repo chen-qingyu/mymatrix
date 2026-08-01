@@ -313,6 +313,34 @@ fn characteristic_polynomial() {
 }
 
 #[rstest]
+fn pseudo_inverse() {
+    // invertible -> equals the inverse
+    let a = Matrix::from([[1, 2], [3, 4]]);
+    assert_eq!(a.pseudo_inverse(), a.inv().unwrap());
+
+    // singular rank-1
+    let s = Matrix::from([[1, 2], [2, 4]]);
+    assert_eq!(
+        s.pseudo_inverse(),
+        Matrix::from([
+            [Fraction::from((1, 25)), Fraction::from((2, 25))],
+            [Fraction::from((2, 25)), Fraction::from((4, 25))],
+        ])
+    );
+    // Moore-Penrose condition: A A⁺ A = A
+    assert_eq!(&s * &s.pseudo_inverse() * &s, s);
+
+    // non-square full column rank: A⁺ A = I
+    let r = Matrix::from([[1, 2], [3, 4], [5, 6]]);
+    let rp = r.pseudo_inverse();
+    assert_eq!(&r * &rp * &r, r);
+    assert_eq!(&rp * &r, Matrix::identity(2));
+
+    // zero matrix -> zero matrix
+    assert_eq!(Matrix::zeros(2, 3).pseudo_inverse(), Matrix::zeros(3, 2));
+}
+
+#[rstest]
 fn lu_decomposition(setup: Fixture) {
     assert_eq!(
         Matrix::from([[2, 3, 1], [4, 7, 1], [6, 7, 3]]).lu_decomposition(),
