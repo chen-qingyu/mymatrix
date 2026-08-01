@@ -189,15 +189,7 @@ fn rotate_right(setup: Fixture) {
 fn kron() {
     let a = Matrix::from([[1, 2], [3, 4]]);
     let b = Matrix::from([[0, 5], [6, 7]]);
-    assert_eq!(
-        a.kron(&b),
-        Matrix::from([
-            [0, 5, 0, 10],
-            [6, 7, 12, 14],
-            [0, 15, 0, 20],
-            [18, 21, 24, 28],
-        ])
-    );
+    assert_eq!(a.kron(&b), Matrix::from([[0, 5, 0, 10], [6, 7, 12, 14], [0, 15, 0, 20], [18, 21, 24, 28],]));
     // A ⊗ I: block diagonal
     assert_eq!(a.kron(&Matrix::identity(2)), Matrix::from([[1, 0, 2, 0], [0, 1, 0, 2], [3, 0, 4, 0], [0, 3, 0, 4]]));
     // mixed sizes: (2x1) ⊗ (1x2)
@@ -375,10 +367,7 @@ fn pseudo_inverse() {
     let s = Matrix::from([[1, 2], [2, 4]]);
     assert_eq!(
         s.pseudo_inverse(),
-        Matrix::from([
-            [Fraction::from((1, 25)), Fraction::from((2, 25))],
-            [Fraction::from((2, 25)), Fraction::from((4, 25))],
-        ])
+        Matrix::from([[Fraction::from((1, 25)), Fraction::from((2, 25))], [Fraction::from((2, 25)), Fraction::from((4, 25))],])
     );
     // Moore-Penrose condition: A A⁺ A = A
     assert_eq!(&s * &s.pseudo_inverse() * &s, s);
