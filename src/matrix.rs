@@ -358,6 +358,56 @@ impl Matrix {
         self.row_size() - zeros
     }
 
+    /// Return a basis of the row space, as rows of a matrix.
+    pub fn row_space(&self) -> Self {
+        let rows = self.row_echelon_form().rows.into_iter().filter(|r| !r.is_zero()).collect();
+        Self { rows }
+    }
+
+    /// Return a basis of the column space, as rows of a matrix.
+    ///
+    /// The basis consists of the columns of this matrix at the pivot
+    /// columns of its reduced row echelon form.
+    pub fn col_space(&self) -> Self {
+        let (_, pivot_cols) = self.rref_and_pivot_cols();
+        let mut basis = Self::zeros(pivot_cols.len(), self.row_size());
+        for (b, &pivot) in pivot_cols.iter().enumerate() {
+            for r in 0..self.row_size() {
+                basis[b][r] = self[r][pivot];
+            }
+        }
+        basis
+    }
+
+    /// Return a basis of the null space, as rows of a matrix.
+    ///
+    /// Each row is a null vector; the result has `col_size()` columns and
+    /// `col_size() - rank` rows.
+    pub fn null_space(&self) -> Self {
+        let (rref, pivot_cols) = self.rref_and_pivot_cols();
+        let free_cols: Vec<usize> = (0..self.col_size()).filter(|c| !pivot_cols.contains(c)).collect();
+
+        let mut basis = Vec::with_capacity(free_cols.len());
+        for &f in &free_cols {
+            let mut v = Vector::zeros(self.col_size());
+            v[f] = 1.into();
+            for (i, &p) in pivot_cols.iter().enumerate() {
+                v[p] = -rref[i][f];
+            }
+            basis.push(v);
+        }
+        Self::from(basis)
+    }
+
+    /// Return the reduced row echelon form and its pivot columns.
+    fn rref_and_pivot_cols(&self) -> (Self, Vec<usize>) {
+        let rref = self.row_canonical_form();
+        let pivot_cols: Vec<usize> = (0..rref.row_size())
+            .filter_map(|r| if rref[r].is_zero() { None } else { Some(rref[r].count_leading_zeros()) })
+            .collect();
+        (rref, pivot_cols)
+    }
+
     /// LDL^T decomposition (rational Cholesky) for symmetric positive definite matrices.
     ///
     /// Returns `(L, d)`, where `L` is a unit lower triangular matrix and `d` is the

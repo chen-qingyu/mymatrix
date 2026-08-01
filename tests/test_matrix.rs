@@ -258,6 +258,37 @@ fn rank(setup: Fixture) {
 }
 
 #[rstest]
+fn subspaces(setup: Fixture) {
+    // rank 2, nullity 1
+    let m = Matrix::from([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
+    assert_eq!(m.row_space(), Matrix::from([[1, 2, 3], [0, -3, -6]]));
+    assert_eq!(m.col_space(), Matrix::from([[1, 4, 7], [2, 5, 8]]));
+    assert_eq!(m.null_space(), Matrix::from([[1, -2, 1]]));
+
+    // full-rank square: trivial null space, bases are identity
+    assert_eq!(Matrix::identity(3).row_space(), Matrix::identity(3));
+    assert_eq!(Matrix::identity(3).col_space(), Matrix::identity(3));
+    assert_eq!(Matrix::identity(3).null_space(), Matrix::new());
+
+    // rank 1: ones(2,2)
+    let o = Matrix::ones(2, 2);
+    assert_eq!(o.row_space(), Matrix::from([[1, 1]]));
+    assert_eq!(o.col_space(), Matrix::from([[1, 1]]));
+    assert_eq!(o.null_space(), Matrix::from([[-1, 1]]));
+
+    // rectangular: 3x2 full column rank
+    let a = Matrix::from([[1, 2], [3, 4], [5, 6]]);
+    assert_eq!(a.row_space(), Matrix::from([[1, 2], [0, -2]]));
+    assert_eq!(a.col_space(), Matrix::from([[1, 3, 5], [2, 4, 6]]));
+    assert_eq!(a.null_space(), Matrix::new());
+
+    // empty
+    assert_eq!(setup.mat_0x0.null_space(), Matrix::new());
+    assert_eq!(setup.mat_0x0.row_space(), Matrix::new());
+    assert_eq!(setup.mat_0x0.col_space(), Matrix::new());
+}
+
+#[rstest]
 fn lu_decomposition(setup: Fixture) {
     assert_eq!(
         Matrix::from([[2, 3, 1], [4, 7, 1], [6, 7, 3]]).lu_decomposition(),
