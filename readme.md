@@ -16,7 +16,7 @@ To use it, add the following lines to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-mymatrix = "1.0"
+mymatrix = "1.1"
 ```
 
 Some simple examples:
