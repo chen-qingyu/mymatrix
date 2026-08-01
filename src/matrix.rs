@@ -61,7 +61,7 @@ impl Matrix {
         }
     }
 
-    /// Returns `true` if the matrix contains no elements.
+    /// Returns `true` if the matrix has no rows (i.e. is `0 x 0`).
     pub fn is_empty(&self) -> bool {
         self.rows.is_empty()
     }
@@ -237,6 +237,8 @@ impl Matrix {
 
     /// Calculate the determinant of this matrix.
     ///
+    /// The determinant of the empty (`0 x 0`) matrix is `1` by convention.
+    ///
     /// # Panics
     /// Panics if the matrix is not square.
     pub fn det(&self) -> Fraction {
@@ -289,6 +291,9 @@ impl Matrix {
     }
 
     /// Return the minor matrix.
+    ///
+    /// # Panics
+    /// Panics if the matrix is not square.
     pub fn minor(&self) -> Self {
         let mut m = Self::zeros(self.row_size(), self.col_size());
         for r in 0..m.row_size() {
@@ -300,11 +305,14 @@ impl Matrix {
     }
 
     /// Return the cofactor matrix.
+    ///
+    /// # Panics
+    /// Panics if the matrix is not square.
     pub fn cofactor(&self) -> Self {
         let mut m = self.minor();
         for r in 0..m.row_size() {
             for c in 0..self.col_size() {
-                // a11 -> a00, r+c parity unchanged
+                // sign of each cofactor is (-1)^(r+c)
                 if (r + c) & 1 == 1 {
                     m[r][c] = -m[r][c];
                 }
@@ -314,12 +322,16 @@ impl Matrix {
     }
 
     /// Return the adjugate matrix.
+    ///
+    /// # Panics
+    /// Panics if the matrix is not square.
     pub fn adj(&self) -> Self {
         self.cofactor().transpose()
     }
 
     /// Calculate the inverse of this matrix.
     ///
+    /// # Errors
     /// Returns `Err(MatrixError::Singular)` if the matrix is not invertible.
     ///
     /// # Panics
@@ -410,8 +422,12 @@ impl Matrix {
 
     /// LU decomposition using the Doolittle algorithm with row pivoting.
     ///
+    /// Rows are swapped only when a pivot is zero, so `L * U` equals `A`
+    /// after applying the same row swaps to `A`.
+    ///
+    /// # Errors
     /// Returns `Err(MatrixError::Singular)` if and only if the matrix is
-    /// singular. Rows are swapped only when a pivot is zero.
+    /// singular.
     ///
     /// # Panics
     /// Panics if the matrix is not square.
@@ -458,7 +474,8 @@ impl Matrix {
         Ok((l, u))
     }
 
-    /// Calculate the integer power of a square matrix using binary exponentiation.
+    /// Calculate the non-negative integer power of a square matrix using
+    /// binary exponentiation (`exp = 0` yields the identity matrix).
     ///
     /// # Panics
     /// Panics if the matrix is not square.
@@ -486,8 +503,10 @@ impl Matrix {
 
     /// Solve the linear system `Ax = b`, where `A` is this square matrix.
     ///
-    /// Returns `Err(MatrixError::Singular)` if `A` is singular
-    /// (no unique solution or inconsistent system).
+    /// # Errors
+    /// Returns `Err(MatrixError::Singular)` if the system has no unique
+    /// solution, i.e. if `A` is singular (the system is then either
+    /// inconsistent or has infinitely many solutions).
     ///
     /// # Panics
     /// Panics if the matrix is not square, or if the size of `b` does not match

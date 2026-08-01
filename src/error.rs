@@ -2,8 +2,10 @@ use std::fmt;
 
 /// Errors that can occur during matrix operations.
 ///
-/// Returned via `Result` for scenarios where the input is mathematically
-/// valid but the operation cannot produce a meaningful result.
+/// Returned via `Result` when the input is structurally well-formed (e.g.
+/// square or dimension-matched) but mathematically unsuitable for the
+/// operation (e.g. singular for inversion, not positive definite for
+/// Cholesky).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum MatrixError {
     /// The matrix is singular (non-invertible).

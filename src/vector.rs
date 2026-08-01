@@ -45,11 +45,16 @@ impl Vector {
     }
 
     /// Determine if it is a zero vector.
+    ///
+    /// An empty vector is considered a zero vector.
     pub fn is_zero(&self) -> bool {
         self.count_leading_zeros() == self.size()
     }
 
     /// Determine whether two vectors are orthogonal.
+    ///
+    /// A zero vector is orthogonal to any vector, and an empty vector is
+    /// orthogonal to an empty vector.
     pub fn is_orthogonal(&self, that: &Self) -> bool {
         detail::check_size(self.size(), that.size());
 
@@ -57,6 +62,9 @@ impl Vector {
     }
 
     /// Determine whether two vectors are parallel.
+    ///
+    /// A zero vector is parallel to any vector, and an empty vector is
+    /// parallel to an empty vector.
     pub fn is_parallel(&self, that: &Self) -> bool {
         detail::check_size(self.size(), that.size());
 
@@ -72,7 +80,9 @@ impl Vector {
         self.elements.iter().zip(&that.elements).all(|(a, b)| *a * scale == *b)
     }
 
-    /// Calculate the norm (abs) of the vector.
+    /// Calculate the Euclidean norm of the vector.
+    ///
+    /// An empty vector has norm `0.0`.
     pub fn norm(&self) -> f64 {
         if self.is_empty() {
             return 0.0;
@@ -102,6 +112,12 @@ impl Vector {
     }
 
     /// Return the cross product of two vectors.
+    ///
+    /// For two 2D vectors the result is a 1-element vector holding the
+    /// `z`-component; for two 3D vectors it is the usual 3-element result.
+    ///
+    /// # Panics
+    /// Panics unless both vectors have size 2 or both have size 3.
     pub fn cross(a: &Self, b: &Self) -> Self {
         if a.size() == 2 && b.size() == 2 {
             Self::from([a[0] * b[1] - a[1] * b[0]])
