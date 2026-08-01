@@ -171,6 +171,33 @@ fn rotate_right(setup: Fixture) {
 }
 
 #[rstest]
+fn kron() {
+    let a = Matrix::from([[1, 2], [3, 4]]);
+    let b = Matrix::from([[0, 5], [6, 7]]);
+    assert_eq!(
+        a.kron(&b),
+        Matrix::from([
+            [0, 5, 0, 10],
+            [6, 7, 12, 14],
+            [0, 15, 0, 20],
+            [18, 21, 24, 28],
+        ])
+    );
+    // A ⊗ I: block diagonal
+    assert_eq!(a.kron(&Matrix::identity(2)), Matrix::from([[1, 0, 2, 0], [0, 1, 0, 2], [3, 0, 4, 0], [0, 3, 0, 4]]));
+    // mixed sizes: (2x1) ⊗ (1x2)
+    assert_eq!(Matrix::from([[1], [2]]).kron(&Matrix::from([[3, 4]])), Matrix::from([[3, 4], [6, 8]]));
+}
+
+#[rstest]
+fn hadamard() {
+    let a = Matrix::from([[1, 2], [3, 4]]);
+    let b = Matrix::from([[5, 6], [7, 8]]);
+    assert_eq!(a.hadamard(&b), Matrix::from([[5, 12], [21, 32]]));
+    assert_eq!(a.hadamard(&Matrix::ones(2, 2)), a);
+}
+
+#[rstest]
 fn row_echelon_form(setup: Fixture) {
     assert_eq!(setup.mat_0x0.row_echelon_form(), Matrix::new());
     assert_eq!(setup.mat_1x1.row_echelon_form(), Matrix::from([[2]]));

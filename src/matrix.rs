@@ -186,6 +186,40 @@ impl Matrix {
         result
     }
 
+    /// Calculate the Kronecker product of this matrix with `that`.
+    pub fn kron(&self, that: &Self) -> Self {
+        let (m, n) = (self.row_size(), self.col_size());
+        let (p, q) = (that.row_size(), that.col_size());
+        let mut result = Self::zeros(m * p, n * q);
+        for i in 0..m {
+            for j in 0..n {
+                for k in 0..p {
+                    for l in 0..q {
+                        result[i * p + k][j * q + l] = self[i][j] * that[k][l];
+                    }
+                }
+            }
+        }
+        result
+    }
+
+    /// Calculate the Hadamard (element-wise) product of this matrix with `that`.
+    ///
+    /// # Panics
+    /// Panics if the dimensions do not match.
+    pub fn hadamard(&self, that: &Self) -> Self {
+        detail::check_size(self.row_size(), that.row_size());
+        detail::check_size(self.col_size(), that.col_size());
+
+        let mut result = self.clone();
+        for r in 0..result.row_size() {
+            for c in 0..result.col_size() {
+                result[r][c] *= that[r][c];
+            }
+        }
+        result
+    }
+
     /// Transform this matrix to general row echelon form.
     pub fn row_echelon_form(&self) -> Self {
         let mut m = self.clone();
