@@ -539,6 +539,35 @@ impl Matrix {
         result
     }
 
+    /// Calculate the characteristic polynomial of this matrix.
+    ///
+    /// Returns the coefficients `[c_0, c_1, ..., c_n]` of
+    /// `det(λI - A) = c_0 λ^n + c_1 λ^(n-1) + ... + c_n`, with `c_0 = 1`.
+    ///
+    /// # Panics
+    /// Panics if the matrix is not square.
+    pub fn characteristic_polynomial(&self) -> Vec<Fraction> {
+        detail::check_square(self);
+        let n = self.row_size();
+
+        // elementary symmetric polynomials of the eigenvalues, via Newton's identities
+        let mut s = vec![Fraction::new(); n + 1]; // s[k] = trace(A^k)
+        let mut e = vec![Fraction::new(); n + 1]; // e[k] = k-th elementary symmetric polynomial
+        e[0] = 1.into();
+        for k in 1..=n {
+            s[k] = self.pow(k as u32).trace();
+            let mut sum = Fraction::new();
+            for i in 1..=k {
+                let term = e[k - i] * s[i];
+                sum += if i % 2 == 1 { term } else { -term };
+            }
+            e[k] = sum / Fraction::from(k as i32);
+        }
+
+        // coefficient of λ^(n-k) is (-1)^k e_k
+        (0..=n).map(|k| if k % 2 == 0 { e[k] } else { -e[k] }).collect()
+    }
+
     /// Solve the linear system `Ax = b`, where `A` is this square matrix.
     ///
     /// # Errors

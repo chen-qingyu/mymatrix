@@ -289,6 +289,30 @@ fn subspaces(setup: Fixture) {
 }
 
 #[rstest]
+fn characteristic_polynomial() {
+    // 1x1: λ - a
+    assert_eq!(Matrix::from([[3]]).characteristic_polynomial(), vec![1.into(), (-3).into()]);
+    // 2x2: λ² - tr·λ + det
+    assert_eq!(Matrix::from([[1, 2], [3, 4]]).characteristic_polynomial(), vec![1.into(), (-5).into(), (-2).into()]);
+    // diagonal 3x3: (λ-2)(λ-3)(λ-4)
+    assert_eq!(
+        Matrix::from([[2, 0, 0], [0, 3, 0], [0, 0, 4]]).characteristic_polynomial(),
+        vec![1.into(), (-9).into(), 26.into(), (-24).into()]
+    );
+
+    // verify p(λ) == det(λI - A) at λ = 2
+    let a = Matrix::from([[1, 2, 3], [4, 5, 6], [7, 8, 0]]);
+    let p = a.characteristic_polynomial();
+    let lam = 2;
+    let det = Matrix::from([[lam - 1, -2, -3], [-4, lam - 5, -6], [-7, -8, lam]]).det();
+    let mut val = Fraction::new();
+    for &c in &p {
+        val = val * Fraction::from(lam) + c;
+    }
+    assert_eq!(val, det);
+}
+
+#[rstest]
 fn lu_decomposition(setup: Fixture) {
     assert_eq!(
         Matrix::from([[2, 3, 1], [4, 7, 1], [6, 7, 3]]).lu_decomposition(),
