@@ -11,17 +11,6 @@ pub fn check_bounds(pos: usize, begin: usize, end: usize) {
     }
 }
 
-/// Check whether the container is not empty.
-///
-/// # Panics
-/// Panics if `size` is 0.
-#[inline]
-pub fn check_empty(size: usize) {
-    if size == 0 {
-        panic!("Error: The container is empty.");
-    }
-}
-
 /// Check that two dimensions are equal.
 ///
 /// # Panics

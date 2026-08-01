@@ -58,7 +58,7 @@ impl Vector {
     pub fn is_orthogonal(&self, that: &Self) -> bool {
         detail::check_size(self.size(), that.size());
 
-        self.is_empty() || (self * that) == 0.into()
+        (self * that) == 0.into()
     }
 
     /// Determine whether two vectors are parallel.
@@ -263,9 +263,9 @@ auto_ops::impl_op_ex!(/|a: Vector, b: Fraction| -> Vector {
 });
 
 auto_ops::impl_op_ex!(*|a: &Vector, b: &Vector| -> Fraction {
-    detail::check_empty(a.size());
     detail::check_size(a.size(), b.size());
 
+    // empty vectors: empty sum, i.e. the dot product is 0
     let mut result = Fraction::new();
     for i in 0..a.size() {
         result += a[i] * b[i];
