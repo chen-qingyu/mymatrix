@@ -59,6 +59,14 @@ impl Matrix {
         }
     }
 
+    /// Return the `c`-th column as a vector.
+    ///
+    /// # Panics
+    /// Panics if `c` is out of bounds.
+    pub fn col(&self, c: usize) -> Vector {
+        Vector::from((0..self.row_size()).map(|r| self[r][c]).collect::<Vec<_>>())
+    }
+
     /// Returns `true` if the matrix has no rows (i.e. is `0 x 0`).
     pub fn is_empty(&self) -> bool {
         self.rows.is_empty()

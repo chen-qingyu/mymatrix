@@ -125,6 +125,17 @@ fn transpose(setup: Fixture) {
 }
 
 #[rstest]
+fn col() {
+    let m = Matrix::from([[1, 2, 3], [4, 5, 6]]);
+    assert_eq!(m.col(0), Vector::from([1, 4]));
+    assert_eq!(m.col(1), Vector::from([2, 5]));
+    assert_eq!(m.col(2), Vector::from([3, 6]));
+
+    // consistency with row access via transpose
+    assert_eq!(m.col(1), m.transpose()[1]);
+}
+
+#[rstest]
 fn rotate_left(setup: Fixture) {
     assert_eq!(setup.mat_0x0.rotate_left(), Matrix::new());
     assert_eq!(setup.mat_1x1.rotate_left(), setup.mat_1x1);
