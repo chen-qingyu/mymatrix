@@ -105,7 +105,7 @@ fn count_leading_zeros() {
 
 #[rstest]
 fn cross() {
-    assert_eq!(Vector::cross(&[1, 2].into(), &[3, 4].into()), [-2].into());
+    assert_eq!(Vector::cross(&[1, 2].into(), &[3, 4].into()), [0, 0, -2].into());
     assert_eq!(Vector::cross(&[1, 2, 3].into(), &[4, 5, 6].into()), [-3, 6, -3].into());
 }
 

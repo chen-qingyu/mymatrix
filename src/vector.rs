@@ -113,18 +113,17 @@ impl Vector {
 
     /// Return the cross product of two vectors.
     ///
-    /// For two 2D vectors the result is a 1-element vector holding the
-    /// `z`-component; for two 3D vectors it is the usual 3-element result.
+    /// 2D vectors are embedded in the `xy`-plane (zero `z`-component), so the
+    /// result is always a 3-element vector; the 2D cross product
+    /// `a[0] * b[1] - a[1] * b[0]` is the `z`-component of the result.
     ///
     /// # Panics
     /// Panics unless both vectors have size 2 or both have size 3.
     pub fn cross(a: &Self, b: &Self) -> Self {
-        if a.size() == 2 && b.size() == 2 {
-            Self::from([a[0] * b[1] - a[1] * b[0]])
-        } else if a.size() == 3 && b.size() == 3 {
-            Self::from([a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]])
-        } else {
-            panic!("Error: Incompatible dimensions for cross product.");
+        match (a.size(), b.size()) {
+            (2, 2) => Self::from([0.into(), 0.into(), a[0] * b[1] - a[1] * b[0]]),
+            (3, 3) => Self::from([a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]),
+            _ => panic!("Error: Incompatible dimensions for cross product."),
         }
     }
 }
