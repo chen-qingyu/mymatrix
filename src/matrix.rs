@@ -21,11 +21,9 @@ impl Matrix {
 
     /// Create a `row x col` matrix filled with `value`.
     pub fn create(row: usize, col: usize, value: Fraction) -> Self {
-        let mut rows = Vec::with_capacity(row);
-        for _ in 0..row {
-            rows.push(Vector::create(col, value));
+        Self {
+            rows: vec![Vector::create(col, value); row],
         }
-        Self { rows }
     }
 
     /// Create a `row x col` zero matrix.
@@ -190,8 +188,8 @@ impl Matrix {
             while j < m.col_size() && m.rows[i][j] == 0.into() {
                 j += 1;
             }
-            for k in i + 1..m.row_size() {
-                if j < m.col_size() {
+            if j < m.col_size() {
+                for k in i + 1..m.row_size() {
                     m.e_row_sum(k, i, -m.rows[k][j] / m.rows[i][j]);
                 }
             }
@@ -226,9 +224,7 @@ impl Matrix {
         // make each pivot equal to 1
         for r in 0..m.row_size() {
             if let Some(col) = pivot_cols[r] {
-                if m[r][col] != 0.into() {
-                    m.e_scalar_multiplication(r, Fraction::from(1) / m[r][col]);
-                }
+                m.e_scalar_multiplication(r, Fraction::from(1) / m[r][col]);
             }
         }
 
@@ -398,10 +394,7 @@ impl Matrix {
                 di -= l[i][k] * l[i][k] * d[k];
             }
 
-            if di == 0.into() {
-                return Err(MatrixError::NotPositiveDefinite);
-            }
-            if di < 0.into() {
+            if di <= 0.into() {
                 return Err(MatrixError::NotPositiveDefinite);
             }
 
@@ -451,8 +444,9 @@ impl Matrix {
             }
 
             // column i of L (multipliers), then update the trailing submatrix (U)
+            let pivot = a[i][i];
             for j in (i + 1)..n {
-                a[j][i] = a[j][i] / a[i][i];
+                a[j][i] /= pivot;
                 for k in (i + 1)..n {
                     a[j][k] = a[j][k] - a[j][i] * a[i][k];
                 }
@@ -482,23 +476,17 @@ impl Matrix {
     pub fn pow(&self, exp: u32) -> Self {
         detail::check_square(self);
 
-        match exp {
-            0 => Self::identity(self.row_size()),
-            1 => self.clone(),
-            _ => {
-                let mut result = Self::identity(self.row_size());
-                let mut base = self.clone();
-                let mut e = exp;
-                while e > 0 {
-                    if e & 1 == 1 {
-                        result = &result * &base;
-                    }
-                    base = &base * &base;
-                    e >>= 1;
-                }
-                result
+        let mut result = Self::identity(self.row_size());
+        let mut base = self.clone();
+        let mut e = exp;
+        while e > 0 {
+            if e & 1 == 1 {
+                result = &result * &base;
             }
+            base = &base * &base;
+            e >>= 1;
         }
+        result
     }
 
     /// Solve the linear system `Ax = b`, where `A` is this square matrix.
@@ -625,27 +613,13 @@ impl<const R: usize, const C: usize> From<[[i32; C]; R]> for Matrix {
 
 impl From<Vec<Vec<Fraction>>> for Matrix {
     fn from(value: Vec<Vec<Fraction>>) -> Self {
-        if let Some(first) = value.first() {
-            let len = first.len();
-            for row in &value[1..] {
-                assert_eq!(row.len(), len, "Error: All rows must have the same length.");
-            }
-        }
-        let rows = value.into_iter().map(Vector::from).collect();
-        Self { rows }
+        Self::from(value.into_iter().map(Vector::from).collect::<Vec<_>>())
     }
 }
 
 impl From<Vec<Vec<i32>>> for Matrix {
     fn from(value: Vec<Vec<i32>>) -> Self {
-        if let Some(first) = value.first() {
-            let len = first.len();
-            for row in &value[1..] {
-                assert_eq!(row.len(), len, "Error: All rows must have the same length.");
-            }
-        }
-        let rows = value.into_iter().map(Vector::from).collect();
-        Self { rows }
+        Self::from(value.into_iter().map(Vector::from).collect::<Vec<_>>())
     }
 }
 
@@ -677,6 +651,8 @@ impl IndexMut<usize> for Matrix {
 
 impl Display for Matrix {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        use std::fmt::Write;
+
         writeln!(f, "[")?;
 
         // calc the max width of element
@@ -684,7 +660,6 @@ impl Display for Matrix {
         let mut width = 0;
         for i in 0..self.row_size() {
             for j in 0..self.col_size() {
-                use std::fmt::Write;
                 write!(buf, "{}", self[i][j]).unwrap();
                 width = width.max(buf.len());
                 buf.clear();
@@ -697,7 +672,6 @@ impl Display for Matrix {
                 if j != 0 {
                     write!(f, " ")?;
                 }
-                use std::fmt::Write;
                 write!(buf, "{}", self[i][j]).unwrap();
                 write!(f, "{:>width$}", buf)?;
                 buf.clear();
@@ -713,8 +687,8 @@ auto_ops::impl_op_ex!(+=|a: &mut Matrix, b: &Matrix| {
     detail::check_size(a.row_size(), b.row_size());
     detail::check_size(a.col_size(), b.col_size());
 
-    for r in 0..a.row_size() {
-        a[r] += &b[r];
+    for (ar, br) in a.rows.iter_mut().zip(&b.rows) {
+        *ar += br;
     }
 });
 
@@ -728,8 +702,8 @@ auto_ops::impl_op_ex!(-=|a: &mut Matrix, b: &Matrix| {
     detail::check_size(a.row_size(), b.row_size());
     detail::check_size(a.col_size(), b.col_size());
 
-    for r in 0..a.row_size() {
-        a[r] -= &b[r];
+    for (ar, br) in a.rows.iter_mut().zip(&b.rows) {
+        *ar -= br;
     }
 });
 
@@ -740,8 +714,8 @@ auto_ops::impl_op_ex!(-|a: &Matrix, b: &Matrix| -> Matrix {
 });
 
 auto_ops::impl_op_ex!(*=|a: &mut Matrix, b: Fraction| {
-    for r in 0..a.row_size() {
-        a.rows[r] *= b;
+    for row in &mut a.rows {
+        *row *= b;
     }
 });
 
@@ -752,8 +726,8 @@ auto_ops::impl_op_ex_commutative!(*|a: Matrix, b: Fraction| -> Matrix {
 });
 
 auto_ops::impl_op_ex!(*=|a: &mut Matrix, b: i32| {
-    for r in 0..a.row_size() {
-        a.rows[r] *= b;
+    for row in &mut a.rows {
+        *row *= b;
     }
 });
 
@@ -764,8 +738,8 @@ auto_ops::impl_op_ex_commutative!(*|a: Matrix, b: i32| -> Matrix {
 });
 
 auto_ops::impl_op_ex!(/=|a: &mut Matrix, b: Fraction| {
-    for r in 0..a.row_size() {
-        a.rows[r] /= b;
+    for row in &mut a.rows {
+        *row /= b;
     }
 });
 
@@ -804,7 +778,7 @@ impl std::ops::Neg for Matrix {
     fn neg(mut self) -> Matrix {
         for row in &mut self.rows {
             for elem in &mut row.elements {
-                *elem = -(*elem);
+                *elem = -*elem;
             }
         }
         self

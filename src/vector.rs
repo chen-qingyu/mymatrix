@@ -68,8 +68,8 @@ impl Vector {
     pub fn is_parallel(&self, that: &Self) -> bool {
         detail::check_size(self.size(), that.size());
 
-        // empty or zero vector parallel to any vector
-        if self.is_empty() || self.is_zero() || that.is_zero() {
+        // zero vector (incl. empty) parallel to any vector
+        if self.is_zero() || that.is_zero() {
             return true;
         }
 
@@ -84,31 +84,12 @@ impl Vector {
     ///
     /// An empty vector has norm `0.0`.
     pub fn norm(&self) -> f64 {
-        if self.is_empty() {
-            return 0.0;
-        }
-
-        let mut norm = 0.0;
-        for i in 0..self.size() {
-            norm += f64::from(self.elements[i] * self.elements[i]);
-        }
-        norm.sqrt()
+        self.elements.iter().map(|x| f64::from(*x * *x)).sum::<f64>().sqrt()
     }
 
     /// Calculate the number of leading zeros of this vector.
     pub fn count_leading_zeros(&self) -> usize {
-        if self.is_empty() {
-            return 0;
-        }
-
-        let mut lz: usize = 0;
-        while self.elements[lz] == 0.into() {
-            lz += 1;
-            if lz == self.size() {
-                break;
-            }
-        }
-        lz
+        self.elements.iter().position(|x| *x != 0.into()).unwrap_or(self.size())
     }
 
     /// Return the cross product of two vectors.
@@ -172,13 +153,14 @@ impl IndexMut<usize> for Vector {
 
 impl Display for Vector {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        use std::fmt::Write;
+
         write!(f, "[")?;
 
         // calc the max width of element
         let mut buf = String::new();
         let mut width = 0;
         for i in 0..self.size() {
-            use std::fmt::Write;
             write!(buf, "{}", self[i]).unwrap();
             width = width.max(buf.len());
             buf.clear();
@@ -189,7 +171,6 @@ impl Display for Vector {
             if i != 0 {
                 write!(f, " ")?;
             }
-            use std::fmt::Write;
             write!(buf, "{}", self[i]).unwrap();
             write!(f, "{:>width$}", buf)?;
             buf.clear();
@@ -201,9 +182,9 @@ impl Display for Vector {
 
 auto_ops::impl_op_ex!(+=|a: &mut Vector, b: &Vector| {
     detail::check_size(a.size(), b.size());
-    for i in 0..a.size() {
-        a[i] += b[i];
-    };
+    for (a_i, b_i) in a.elements.iter_mut().zip(&b.elements) {
+        *a_i += *b_i;
+    }
 });
 
 auto_ops::impl_op_ex!(+|a: &Vector, b: &Vector| -> Vector {
@@ -214,9 +195,9 @@ auto_ops::impl_op_ex!(+|a: &Vector, b: &Vector| -> Vector {
 
 auto_ops::impl_op_ex!(-=|a: &mut Vector, b: &Vector| {
     detail::check_size(a.size(), b.size());
-    for i in 0..a.size() {
-        a[i] -= b[i];
-    };
+    for (a_i, b_i) in a.elements.iter_mut().zip(&b.elements) {
+        *a_i -= *b_i;
+    }
 });
 
 auto_ops::impl_op_ex!(-|a: &Vector, b: &Vector| -> Vector {
@@ -226,8 +207,8 @@ auto_ops::impl_op_ex!(-|a: &Vector, b: &Vector| -> Vector {
 });
 
 auto_ops::impl_op_ex!(*=|a: &mut Vector, b: Fraction| {
-    for i in 0..a.size() {
-        a[i] *= b;
+    for x in &mut a.elements {
+        *x *= b;
     }
 });
 
@@ -238,8 +219,8 @@ auto_ops::impl_op_ex_commutative!(*|a: Vector, b: Fraction| -> Vector {
 });
 
 auto_ops::impl_op_ex!(*=|a: &mut Vector, b: i32| {
-    for i in 0..a.size() {
-        a[i] *= Fraction::from(b);
+    for x in &mut a.elements {
+        *x *= Fraction::from(b);
     }
 });
 
@@ -250,8 +231,8 @@ auto_ops::impl_op_ex_commutative!(*|a: Vector, b: i32| -> Vector {
 });
 
 auto_ops::impl_op_ex!(/=|a: &mut Vector, b: Fraction| {
-    for i in 0..a.size() {
-        a[i] /= b;
+    for x in &mut a.elements {
+        *x /= b;
     }
 });
 
@@ -277,7 +258,7 @@ impl std::ops::Neg for Vector {
 
     fn neg(mut self) -> Vector {
         for elem in &mut self.elements {
-            *elem = -(*elem);
+            *elem = -*elem;
         }
         self
     }
