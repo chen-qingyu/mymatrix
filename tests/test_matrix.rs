@@ -457,10 +457,14 @@ fn solve() {
     let b = Vector::from([7, 13]);
     assert_eq!(a.solve(&b), Ok(Vector::from([2, 1])));
 
-    // singular system (no unique solution)
+    // consistent but singular (infinitely many solutions)
     let singular = Matrix::from([[1, 2], [2, 4]]);
     let b2 = Vector::from([3, 6]);
     assert_eq!(singular.solve(&b2), Err(MatrixError::Singular));
+
+    // inconsistent system (no solution)
+    let m = Matrix::from([[1, 1], [1, 1]]);
+    assert_eq!(m.solve(&Vector::from([2, 3])), Err(MatrixError::Inconsistent));
 }
 
 #[rstest]
@@ -487,8 +491,8 @@ fn general_solution() {
     assert_eq!(&m * &xp, Vector::from([2, 2]));
     assert_eq!(&m * &null[0], Vector::zeros(2));
 
-    // inconsistent -> Err
-    assert_eq!(m.general_solution(&Vector::from([2, 3])), Err(MatrixError::Singular));
+    // inconsistent -> Err(Inconsistent)
+    assert_eq!(m.general_solution(&Vector::from([2, 3])), Err(MatrixError::Inconsistent));
 }
 
 #[rstest]

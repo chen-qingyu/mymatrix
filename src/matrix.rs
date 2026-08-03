@@ -663,7 +663,7 @@ impl Matrix {
     /// solution is unique.
     ///
     /// # Errors
-    /// Returns `Err(MatrixError::Singular)` if the system is inconsistent
+    /// Returns `Err(MatrixError::Inconsistent)` if the system is inconsistent
     /// (has no solution).
     ///
     /// # Panics
@@ -685,7 +685,7 @@ impl Matrix {
         for r in 0..rref.row_size() {
             let all_zero = rref[r].elements[..rref.col_size() - 1].iter().all(|&x| x == 0.into());
             if all_zero && rref[r][rref.col_size() - 1] != 0.into() {
-                return Err(MatrixError::Singular);
+                return Err(MatrixError::Inconsistent);
             }
         }
 
@@ -703,10 +703,16 @@ impl Matrix {
 
     /// Solve the linear system `Ax = b`, where `A` is this square matrix.
     ///
-    /// Returns the unique solution, or `Err(MatrixError::Singular)` if the
-    /// system has no unique solution (it is then either inconsistent or has
-    /// infinitely many solutions). For the general solution, use
-    /// `general_solution`.
+    /// Solve the linear system `Ax = b`, where `A` is this square matrix.
+    ///
+    /// Returns the unique solution.
+    ///
+    /// # Errors
+    /// - `Err(MatrixError::Inconsistent)` if the system has no solution.
+    /// - `Err(MatrixError::Singular)` if the system is consistent but has
+    ///   infinitely many solutions (`A` is singular).
+    ///
+    /// For the general solution, use `general_solution`.
     ///
     /// # Panics
     /// Panics if the matrix is not square, or if the size of `b` does not match
