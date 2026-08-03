@@ -7,7 +7,7 @@ _My simple matrix library that can perform fraction operations._
 - **Name**: MyMatrix
 - **Goal**: Provide a simple matrix library that can perform fraction operations
 - **Module**: `Fraction`, `Vector`, `Matrix`
-- **Exactness**: Every operation uses exact rational arithmetic (`pyinrs::Fraction`), so there is no floating-point error
+- **Exactness**: Every operation uses exact rational arithmetic (`pyinrs::Fraction`), so there is no floating-point error — the only exception is `Vector::norm()`, which returns an `f64`
 - **Error handling**: structurally invalid input (non-square, mismatched dimensions, out-of-bounds) panics; mathematically invalid input (singular, inconsistent, not positive definite) is returned as `Result<_, MatrixError>`
 - **Test**: Using [rstest](https://crates.io/crates/rstest) for unit tests and ensure all tests passed
 - **Security**: There is no `unsafe` code block
@@ -252,8 +252,6 @@ for x in &mut w {
 
 ## 4. Notes
 
-- **Exact arithmetic**: all values are `pyinrs::Fraction`; there is no floating-point error. The only exception is `Vector::norm()`, which returns an `f64`.
 - **Column-vector convention**: `Matrix * Vector` treats the vector as a column; `Vector * Vector` is the dot product and returns a `Fraction`.
 - **Empty vector** is the zero vector of R⁰: `is_zero()` is `true`, the empty dot product is `0`, and `norm()` is `0`.
 - **Empty matrix**: `det(0x0) = 1` (empty-product convention) and the inverse of the empty matrix is itself.
-- **Error handling**: structurally invalid input (non-square, mismatched dimensions, out-of-bounds) panics; mathematically invalid input (singular, inconsistent, not positive definite) is returned as `Result<_, MatrixError>`.
