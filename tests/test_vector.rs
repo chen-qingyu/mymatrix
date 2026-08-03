@@ -94,6 +94,14 @@ fn norm() {
 }
 
 #[rstest]
+fn norm_squared() {
+    assert_eq!(Vector::from([0]).norm_squared(), 0.into());
+    assert_eq!(Vector::from([3, 4]).norm_squared(), 25.into());
+    assert_eq!(Vector::from([1, 1]).norm_squared(), 2.into()); // irrational norm, exact square
+    assert_eq!(Vector::from([Fraction::from((1, 2))]).norm_squared(), Fraction::from((1, 4)));
+}
+
+#[rstest]
 fn count_leading_zeros() {
     assert_eq!(Vector::from([0]).count_leading_zeros(), 1);
     assert_eq!(Vector::from([0, 1]).count_leading_zeros(), 1);

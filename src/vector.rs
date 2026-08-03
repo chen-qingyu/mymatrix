@@ -80,11 +80,21 @@ impl Vector {
         self.elements.iter().zip(&that.elements).all(|(a, b)| *a * scale == *b)
     }
 
+    /// Calculate the squared Euclidean norm of the vector.
+    ///
+    /// Unlike [`norm`](Self::norm), this uses exact rational arithmetic.
+    pub fn norm_squared(&self) -> Fraction {
+        self.elements.iter().fold(Fraction::new(), |acc, x| acc + *x * *x)
+    }
+
     /// Calculate the Euclidean norm of the vector.
     ///
     /// An empty vector has norm `0.0`.
+    ///
+    /// The result is an `f64` because the norm may be irrational; for an
+    /// exact result use [`norm_squared`](Self::norm_squared).
     pub fn norm(&self) -> f64 {
-        self.elements.iter().map(|x| f64::from(*x * *x)).sum::<f64>().sqrt()
+        f64::from(self.norm_squared()).sqrt()
     }
 
     /// Calculate the number of leading zeros of this vector.

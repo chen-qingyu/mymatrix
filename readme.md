@@ -14,7 +14,7 @@ _My simple matrix library that can perform fraction operations._
 
 ## 2. Feature Overview
 
-- **Vector**: dot / cross / norm / zero / orthogonal / parallel
+- **Vector**: dot / cross / norm / norm_squared / zero / orthogonal / parallel
 - **Matrix arithmetic**: add, subtract, multiply, scalar operations, transpose, rotations, Kronecker & Hadamard products, power
 - **Linear algebra**: determinant, inverse, adjugate, minor / cofactor, rank, row / column / null space bases, Moore-Penrose pseudo-inverse
 - **Decompositions**: LDLᵀ (exact-rational Cholesky) and LU (Doolittle, with row pivoting)
@@ -48,6 +48,7 @@ Vector::from([1, 2, 3]) * Fraction::from((2, 5)); // [2/5 4/5 6/5]
 
 // queries
 Vector::from([3, 4]).norm();                                // 5.0
+Vector::from([3, 4]).norm_squared();                        // 25 (exact)
 Vector::from([0, 0]).is_zero();                             // true
 Vector::from([1, 1]).is_orthogonal(&Vector::from([1, -1])); // true
 Vector::from([1, 1]).is_parallel(&Vector::from([2, 2]));    // true
