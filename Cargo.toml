@@ -7,7 +7,8 @@ authors = ["Chen QingYu <chen_qingyu@qq.com>"]
 description = "My simple matrix library that can perform fraction operations."
 readme = "readme.md"
 repository = "https://github.com/chen-qingyu/mymatrix"
-keywords = ["matrix", "fraction"]
+keywords = ["matrix", "fraction", "linear-algebra", "rational", "exact"]
+categories = ["mathematics"]
 
 [dependencies]
 pyinrs = "1.10"
