@@ -306,3 +306,21 @@ impl IntoIterator for Vector {
         self.elements.into_iter()
     }
 }
+
+impl<'a> IntoIterator for &'a Vector {
+    type Item = &'a Fraction;
+    type IntoIter = std::slice::Iter<'a, Fraction>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
+    }
+}
+
+impl<'a> IntoIterator for &'a mut Vector {
+    type Item = &'a mut Fraction;
+    type IntoIter = std::slice::IterMut<'a, Fraction>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter_mut()
+    }
+}

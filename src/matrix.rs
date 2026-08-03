@@ -1022,3 +1022,21 @@ impl IntoIterator for Matrix {
         self.rows.into_iter()
     }
 }
+
+impl<'a> IntoIterator for &'a Matrix {
+    type Item = &'a Vector;
+    type IntoIter = std::slice::Iter<'a, Vector>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
+    }
+}
+
+impl<'a> IntoIterator for &'a mut Matrix {
+    type Item = &'a mut Vector;
+    type IntoIter = std::slice::IterMut<'a, Vector>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter_mut()
+    }
+}

@@ -609,8 +609,17 @@ fn iter_methods() {
     let m = Matrix::from([[1, 2], [3, 4]]);
     assert_eq!(m.iter().cloned().collect::<Matrix>(), m);
 
+    // IntoIterator for &Matrix
+    let mut nrows = 0;
+    for row in &m {
+        assert_eq!(row.size(), 2);
+        nrows += 1;
+    }
+    assert_eq!(nrows, 2);
+
+    // IntoIterator for &mut Matrix
     let mut w = Matrix::from([[1, 2], [3, 4]]);
-    for row in w.iter_mut() {
+    for row in &mut w {
         row[0] = 0.into();
     }
     assert_eq!(w, Matrix::from([[0, 2], [0, 4]]));

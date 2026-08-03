@@ -188,8 +188,16 @@ fn iter_methods() {
     let v = Vector::from([1, 2, 3]);
     assert_eq!(v.iter().cloned().collect::<Vector>(), v);
 
+    // IntoIterator for &Vector
+    let mut sum = Fraction::new();
+    for x in &v {
+        sum += *x;
+    }
+    assert_eq!(sum, 6.into());
+
+    // IntoIterator for &mut Vector
     let mut w = Vector::from([1, 2, 3]);
-    for x in w.iter_mut() {
+    for x in &mut w {
         *x *= Fraction::from(2);
     }
     assert_eq!(w, Vector::from([2, 4, 6]));
