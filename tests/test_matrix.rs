@@ -591,3 +591,27 @@ fn format(setup: Fixture) {
 ]"
     );
 }
+
+#[rstest]
+fn from_iterator() {
+    let m: Matrix = [vec![1, 2], vec![3, 4]].into_iter().collect();
+    assert_eq!(m, Matrix::from([[1, 2], [3, 4]]));
+
+    let rows: Matrix = [Vector::from([1, 2]), Vector::from([3, 4])].into_iter().collect();
+    assert_eq!(rows, Matrix::from([[1, 2], [3, 4]]));
+
+    let fracs: Matrix = [vec![Fraction::from(1), Fraction::from(2)]].into_iter().collect();
+    assert_eq!(fracs, Matrix::from([[1, 2]]));
+}
+
+#[rstest]
+fn iter_methods() {
+    let m = Matrix::from([[1, 2], [3, 4]]);
+    assert_eq!(m.iter().cloned().collect::<Matrix>(), m);
+
+    let mut w = Matrix::from([[1, 2], [3, 4]]);
+    for row in w.iter_mut() {
+        row[0] = 0.into();
+    }
+    assert_eq!(w, Matrix::from([[0, 2], [0, 4]]));
+}

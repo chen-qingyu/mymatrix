@@ -107,6 +107,16 @@ impl Vector {
             _ => panic!("Error: Incompatible dimensions for cross product."),
         }
     }
+
+    /// Return an iterator over the elements.
+    pub fn iter(&self) -> std::slice::Iter<'_, Fraction> {
+        self.elements.iter()
+    }
+
+    /// Return a mutable iterator over the elements.
+    pub fn iter_mut(&mut self) -> std::slice::IterMut<'_, Fraction> {
+        self.elements.iter_mut()
+    }
 }
 
 impl<const N: usize> From<[Fraction; N]> for Vector {
@@ -133,6 +143,22 @@ impl From<Vec<i32>> for Vector {
     fn from(value: Vec<i32>) -> Self {
         Self {
             elements: value.into_iter().map(Fraction::from).collect(),
+        }
+    }
+}
+
+impl FromIterator<Fraction> for Vector {
+    fn from_iter<T: IntoIterator<Item = Fraction>>(iter: T) -> Self {
+        Self {
+            elements: iter.into_iter().collect(),
+        }
+    }
+}
+
+impl FromIterator<i32> for Vector {
+    fn from_iter<T: IntoIterator<Item = i32>>(iter: T) -> Self {
+        Self {
+            elements: iter.into_iter().map(Fraction::from).collect(),
         }
     }
 }

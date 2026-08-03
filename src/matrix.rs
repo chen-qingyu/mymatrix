@@ -788,6 +788,16 @@ impl Matrix {
         self.rows[i] += scaled;
         self
     }
+
+    /// Return an iterator over the rows.
+    pub fn iter(&self) -> std::slice::Iter<'_, Vector> {
+        self.rows.iter()
+    }
+
+    /// Return a mutable iterator over the rows.
+    pub fn iter_mut(&mut self) -> std::slice::IterMut<'_, Vector> {
+        self.rows.iter_mut()
+    }
 }
 
 impl<const R: usize, const C: usize> From<[[Fraction; C]; R]> for Matrix {
@@ -825,6 +835,24 @@ impl From<Vec<Vector>> for Matrix {
             }
         }
         Self { rows: value }
+    }
+}
+
+impl FromIterator<Vector> for Matrix {
+    fn from_iter<T: IntoIterator<Item = Vector>>(iter: T) -> Self {
+        Self::from(iter.into_iter().collect::<Vec<_>>())
+    }
+}
+
+impl FromIterator<Vec<Fraction>> for Matrix {
+    fn from_iter<T: IntoIterator<Item = Vec<Fraction>>>(iter: T) -> Self {
+        Self::from(iter.into_iter().collect::<Vec<_>>())
+    }
+}
+
+impl FromIterator<Vec<i32>> for Matrix {
+    fn from_iter<T: IntoIterator<Item = Vec<i32>>>(iter: T) -> Self {
+        Self::from(iter.into_iter().collect::<Vec<_>>())
     }
 }
 

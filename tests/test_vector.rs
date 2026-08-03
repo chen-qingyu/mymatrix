@@ -173,3 +173,24 @@ fn format(setup: Fixture) {
         "[-3/4    0  5/6]"
     );
 }
+
+#[rstest]
+fn from_iterator() {
+    let v: Vector = (0..5).map(Fraction::from).collect();
+    assert_eq!(v, Vector::from([0, 1, 2, 3, 4]));
+
+    let w: Vector = [1, 2, 3].into_iter().collect();
+    assert_eq!(w, Vector::from([1, 2, 3]));
+}
+
+#[rstest]
+fn iter_methods() {
+    let v = Vector::from([1, 2, 3]);
+    assert_eq!(v.iter().cloned().collect::<Vector>(), v);
+
+    let mut w = Vector::from([1, 2, 3]);
+    for x in w.iter_mut() {
+        *x *= Fraction::from(2);
+    }
+    assert_eq!(w, Vector::from([2, 4, 6]));
+}
