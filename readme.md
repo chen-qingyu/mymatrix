@@ -28,7 +28,7 @@ To use it, add the following lines to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-mymatrix = "1.1"
+mymatrix = "1.2"
 ```
 
 ### 3.1 Vector operations
