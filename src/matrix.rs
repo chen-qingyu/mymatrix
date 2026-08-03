@@ -328,8 +328,14 @@ impl Matrix {
     /// Return the matrix obtained by removing the `i`-th row and `j`-th column.
     ///
     /// # Panics
-    /// Panics if `i` or `j` is out of bounds.
+    /// Panics if `i` or `j` is out of bounds, or if the matrix has no row or
+    /// no column to remove (including an empty matrix).
     pub fn submatrix(&self, i: usize, j: usize) -> Self {
+        // an empty (or row-less/column-less) matrix has nothing to remove,
+        // so any index is out of range; avoids underflowing `size - 1`
+        if self.row_size() == 0 || self.col_size() == 0 {
+            panic!("Error: Index out of range.");
+        }
         detail::check_bounds(i, 0, self.row_size() - 1);
         detail::check_bounds(j, 0, self.col_size() - 1);
 

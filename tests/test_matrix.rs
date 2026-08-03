@@ -243,6 +243,12 @@ fn submatrix(setup: Fixture) {
 }
 
 #[rstest]
+#[should_panic(expected = "Error: Index out of range.")]
+fn bad_submatrix_empty() {
+    Matrix::new().submatrix(0, 0);
+}
+
+#[rstest]
 fn minor(setup: Fixture) {
     assert_eq!(Matrix::from([[1, 2], [3, 4]]).minor(), Matrix::from([[4, 3], [2, 1]]));
     assert_eq!(setup.mat_3x3.minor(), Matrix::from([[-3, -6, -3], [-6, -12, -6], [-3, -6, -3]]));
