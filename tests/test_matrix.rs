@@ -107,6 +107,17 @@ fn is_diagonal(setup: Fixture) {
 }
 
 #[rstest]
+fn is_zero(setup: Fixture) {
+    assert!(setup.mat_0x0.is_zero()); // empty matrix is a zero matrix
+    assert!(Matrix::zeros(2, 3).is_zero());
+    assert!(Matrix::from([[0, 0], [0, 0]]).is_zero());
+
+    assert!(!setup.mat_1x1.is_zero());
+    assert!(!setup.mat_3x3.is_zero());
+    assert!(!Matrix::identity(3).is_zero());
+}
+
+#[rstest]
 fn trace(setup: Fixture) {
     assert_eq!(setup.mat_0x0.trace(), 0.into());
     assert_eq!(setup.mat_1x1.trace(), 2.into());

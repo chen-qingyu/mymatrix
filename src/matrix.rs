@@ -150,6 +150,13 @@ impl Matrix {
         self.is_lower() && self.is_upper()
     }
 
+    /// Check if the matrix is a zero matrix.
+    ///
+    /// An empty matrix is considered a zero matrix.
+    pub fn is_zero(&self) -> bool {
+        self.iter().all(|row| row.is_zero())
+    }
+
     /// Calculate the trace of the matrix.
     ///
     /// # Panics

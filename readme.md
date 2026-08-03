@@ -123,6 +123,7 @@ m.is_symmetric();  // false
 m.is_upper();      // false
 m.is_lower();      // false
 m.is_diagonal();   // false
+Matrix::zeros(2, 3).is_zero(); // true
 
 m.transpose();
 m.rotate_left();   // 90 degrees counter-clockwise
